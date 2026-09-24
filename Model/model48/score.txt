@@ -1,0 +1,1 @@
+﻿public AUC 0.942 (submission 56318312) - ties model43; the member swap added nothing

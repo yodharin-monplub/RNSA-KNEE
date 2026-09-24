@@ -1,0 +1,11 @@
+{
+  "campaign_cap_usd": 20,
+  "pilot_cap_usd": 1.0,
+  "pilot_max_hours": 6,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 100,
+  "max_transfer_gb": 40,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model56-finespacing-finetune",
+  "policy": "Verify all 6%-94% readiness gates before launch; backup then destroy on completion. Stop before the $3 model56 cap with reserve. No credit purchases."
+}

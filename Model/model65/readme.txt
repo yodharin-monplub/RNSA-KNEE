@@ -1,0 +1,2 @@
+Model65: Full-training test, arm A: ResNet34 (ImageNet a1_in1k) at 256 px, every layer trained for 25 epochs with GPU augmentation, plain soft-label BCE on the Gemini labels,
+16 windows per study, batch 8, cosine schedule. First properly regularised from-ImageNet run (model36 ConvNeXt without augmentation reached 0.892; the forum's top teams report 0.938-0.950 LB with this kind of model). Reference: our fine-tuned CoAtNet arms score 0.925 on the 58 gold cases.

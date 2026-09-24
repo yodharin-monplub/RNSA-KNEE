@@ -1,0 +1,13 @@
+{
+  "campaign_cap_usd": 20,
+  "pilot_cap_usd": 2.5,
+  "pilot_max_hours": 10,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 60,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 20,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model47-dino-members",
+  "policy": "Fine-tune the twenty public DINOv2 members on the Gemini relabels; verify each stored fingerprint before training; backup then destroy."
+}

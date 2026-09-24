@@ -1,0 +1,1 @@
+﻿public AUC 0.940 (submission 56282564, notebook version 1)

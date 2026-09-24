@@ -1,0 +1,9 @@
+Gold development AUC (58 cases, never trained on), original arm -> retrained final head (3-seed range):
+  maxspan        0.9254 -> 0.9308  (0.9300-0.9313)
+  native384dense 0.9205 -> 0.9236  (0.9235-0.9242)
+  native384-v8   0.9197 -> 0.9218  (0.9223-0.9224)
+  fine-spacing   0.9160 -> 0.9181  (0.9178-0.9182)
+CoAtNet-side blend (weights 0.70/0.15/0.30/0.15): 0.9305 (model43 arms) -> 0.9326, +0.0020,
+paired bootstrap 95% CI [-0.0029, +0.0078], P(diff > 0) = 0.78. Largest per-finding change: Synovitis 0.852 -> 0.875,
+Contusion 0.965 -> 0.954. Not significant on 58 cases; every arm and every seed moved in the same direction.
+Public leaderboard: 0.943 (submission 56354360, 2026-09-19) - new project best; model43 with the original heads scored 0.942.

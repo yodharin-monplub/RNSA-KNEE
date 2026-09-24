@@ -1,0 +1,1 @@
+Gold development AUC (58 cases): 0.866437 (fold A only, half the data; model65 on all data 0.9104). Purpose: out-of-fold predictions for fold B. Vast est 0.34 USD.

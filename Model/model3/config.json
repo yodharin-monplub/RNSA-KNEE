@@ -1,0 +1,12 @@
+{
+  "name": "model3",
+  "head": "attention",
+  "backbone": "vit_small_patch14_dinov2.lvd142m",
+  "seed": 2027,
+  "epochs": 80,
+  "batch_size": 128,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.03,
+  "patience": 12,
+  "dropout": 0.3
+}

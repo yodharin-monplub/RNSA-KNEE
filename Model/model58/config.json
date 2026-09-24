@@ -1,0 +1,15 @@
+{
+  "seed": 20261108,
+  "epochs": 2,
+  "train_windows": 24,
+  "batch_size": 2,
+  "workers": 2,
+  "encoder_lr": 0.000003,
+  "unfreeze_stages": 2,
+  "head_lr": 0.00001,
+  "weight_decay": 0.01,
+  "teacher_weight": 0.3,
+  "gradient_clip": 1.0,
+  "targets": "data/llm_relabel/targets_g38f_low.csv",
+  "selection": "confidence-weighted weak validation BCE, including epoch zero"
+}

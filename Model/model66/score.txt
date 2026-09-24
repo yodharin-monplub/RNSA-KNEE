@@ -1,0 +1,1 @@
+Gold development AUC (58 cases, never trained on): 0.896239 at epoch 23 (model65 without external data 0.910415; diff -0.0142, 95% CI [-0.0313, +0.0012]). Not submitted. Vast est 0.72 USD.

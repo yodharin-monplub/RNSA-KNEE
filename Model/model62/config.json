@@ -1,0 +1,4 @@
+{
+  "kind": "external-data cache build, no training",
+  "source": "fastMRI single-coil knee + fastMRI+ annotations"
+}

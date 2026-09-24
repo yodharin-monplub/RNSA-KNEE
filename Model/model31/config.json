@@ -1,0 +1,16 @@
+{
+  "seed": 20260920,
+  "epochs": 2,
+  "train_windows": 12,
+  "batch_size": 2,
+  "workers": 3,
+  "encoder_lr": 0.000005,
+  "head_lr": 0.00001,
+  "weight_decay": 0.01,
+  "teacher_weight": 0.3,
+  "gradient_clip": 1.0,
+  "include_weak_val_in_train": true,
+  "select": "last",
+  "targets": "data/weak_labels_v4/llm_labels_v4_blend.csv",
+  "selection": "full-data refit of model28's recipe (native384-v8, s44 cache) (train + weak_val); fixed 2 epochs, the epoch model28 selected by weak-validation BCE; gold descriptive only"
+}

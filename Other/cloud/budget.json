@@ -1,0 +1,11 @@
+{
+  "campaign_cap_usd": 20,
+  "pilot_cap_usd": 5,
+  "pilot_max_hours": 10,
+  "max_hourly_usd": 0.40,
+  "disk_gb": 60,
+  "max_transfer_gb": 40,
+  "max_transfer_usd_per_gb": 0.005,
+  "provider": "Vast.ai",
+  "policy": "One instance at a time. Preserve artifacts, then destroy the pilot instance. No automatic credit purchases."
+}

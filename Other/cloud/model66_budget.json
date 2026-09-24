@@ -1,0 +1,13 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 3.0,
+  "pilot_max_hours": 10,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 140,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model66-fulltrain-b",
+  "policy": "External-data full-training test (user budget 18 USD for this phase; 1.23 used before). Smoke gates training. Backup then destroy."
+}

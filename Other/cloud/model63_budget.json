@@ -1,0 +1,13 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 1.5,
+  "pilot_max_hours": 8,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model63-ext-test-a",
+  "policy": "External-data step 2 (user budget 18 USD for steps 1-2, given 2026-09-19; campaign cap = earlier 20 + 18). Smoke gates training. Backup then destroy. No credit purchases."
+}

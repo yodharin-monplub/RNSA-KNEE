@@ -1,0 +1,1 @@
+Gold development AUC (58 cases, never trained on): 0.925133 (model38 baseline 0.925370; difference -0.0002, paired bootstrap 95% CI [-0.0031, +0.0028]). Not submitted.

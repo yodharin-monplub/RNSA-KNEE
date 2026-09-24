@@ -1,0 +1,13 @@
+{
+  "campaign_cap_usd": 20,
+  "pilot_cap_usd": 2.0,
+  "pilot_max_hours": 5,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 60,
+  "min_disk_bw": 500,
+  "min_inet_up": 300,
+  "max_transfer_gb": 120,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model62-fastmri-cache",
+  "policy": "Stream-download fastMRI knee single-coil, keep compact uint8 cache, upload privately, destroy. No credit purchases."
+}

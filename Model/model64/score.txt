@@ -1,0 +1,1 @@
+Gold development AUC (58 cases, never trained on): 0.923925 (model63 0.925133; difference -0.0012, 95% CI [-0.0067, +0.0044]; vs model38 -0.0014 [-0.0071, +0.0045]). Not submitted.

@@ -1,0 +1,1 @@
+Gold development AUC (58 cases, never trained on): 0.910415 at epoch 25 (CoAtNet arm model38 0.925370; diff -0.0150, 95% CI [-0.0313, +0.0030]). Rank-blend with the 4-arm CoAtNet blend at weight 0.2: 0.9314 vs 0.9305. Not submitted. Vast est 0.67 USD.

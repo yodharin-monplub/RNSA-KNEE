@@ -1,0 +1,14 @@
+{
+  "seed": 20260911,
+  "epochs": 2,
+  "train_windows": 12,
+  "batch_size": 2,
+  "workers": 2,
+  "encoder_lr": 0.000005,
+  "head_lr": 0.00001,
+  "weight_decay": 0.01,
+  "teacher_weight": 0.3,
+  "gradient_clip": 1.0,
+  "targets": "data/llm_relabel/targets_hybrid.csv",
+  "selection": "confidence-weighted weak validation BCE, including epoch zero"
+}

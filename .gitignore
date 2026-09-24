@@ -1,0 +1,37 @@
+# Secrets - never commit
+Other/.env
+Other/email.txt
+Other/.kaggle/
+Other/.cache/
+**/kaggle.json
+*.pem
+id_ed25519*
+id_rsa*
+
+# Competition and external data (33 GB, redistribution not allowed by the Kaggle rules)
+Data/
+Other/data/
+
+# Rental outputs, caches, model weights (20 GB; weights live in private Kaggle datasets)
+Other/artifacts/
+Other/.venv/
+*.pt
+*.pth
+*.safetensors
+*.npz
+*.tar.gz
+
+# Session transcripts may quote tool output; keep them local
+.claude/
+.agents/
+.codex/
+
+# .git/info/exclude hides the Other/model* working folders (their contents are duplicated under Model/),
+# but model12 is the inference package that scripts/ and every submission notebook import.
+!Other/model12/
+Other/model12/__pycache__/
+
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

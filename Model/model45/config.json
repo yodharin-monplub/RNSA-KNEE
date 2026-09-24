@@ -1,0 +1,17 @@
+{
+    "seed":  20260926,
+    "epochs":  1,
+    "train_windows":  12,
+    "batch_size":  2,
+    "workers":  2,
+    "encoder_lr":  0.000005,
+    "head_lr":  0.00001,
+    "weight_decay":  0.01,
+    "teacher_weight":  0.3,
+    "gradient_clip":  1.0,
+    "targets":  "data/llm_relabel/targets_g38f_low.csv",
+    "selection":  "half-fold teacher for self-distillation: trains on one half of the non-gold studies (split by report group) and writes out-of-sample predictions for the other half; fixed 1 epoch",
+    "fold":  "B",
+    "select":  "last",
+    "include_weak_val_in_train":  true
+}

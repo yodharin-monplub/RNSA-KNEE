@@ -1,0 +1,11 @@
+{
+  "campaign_cap_usd": 20,
+  "pilot_cap_usd": 1.0,
+  "pilot_max_hours": 6,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 120,
+  "max_transfer_gb": 45,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model54-native384-finetune",
+  "policy": "Retry after the first rental failed during dependency installation. Verify all 384px readiness gates before launch; backup then destroy on completion. Stop before the combined $3 model54 cap with reserve. No credit purchases."
+}

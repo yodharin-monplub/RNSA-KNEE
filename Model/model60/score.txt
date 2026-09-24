@@ -1,0 +1,3 @@
+Gold development AUC (58 cases, never trained on): 0.925523 (selected epoch 1 by weak-validation BCE).
+Reference model38 (same recipe and seed, Gemini labels only): 0.925370. Difference +0.0002, paired bootstrap 95% CI [-0.0015, +0.0020]: neutral.
+Not submitted; not used in any blend.

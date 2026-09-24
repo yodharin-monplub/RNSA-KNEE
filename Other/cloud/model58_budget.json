@@ -1,0 +1,13 @@
+{
+  "campaign_cap_usd": 20,
+  "pilot_cap_usd": 1.0,
+  "pilot_max_hours": 6,
+  "max_hourly_usd": 0.4,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 40,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model58-maxspan-two-stage",
+  "policy": "Reuse model16's verified 2%-98% 336px cache and maxspan checkpoint. Rental-local smoke with the model58 config gates full training. Backup then destroy. No credit purchases."
+}

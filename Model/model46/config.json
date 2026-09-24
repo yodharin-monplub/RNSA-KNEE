@@ -1,0 +1,14 @@
+{
+    "seed":  20260927,
+    "epochs":  2,
+    "train_windows":  12,
+    "batch_size":  2,
+    "workers":  2,
+    "encoder_lr":  0.000005,
+    "head_lr":  0.00001,
+    "weight_decay":  0.01,
+    "teacher_weight":  0.3,
+    "gradient_clip":  1.0,
+    "targets":  "data/llm_relabel/targets_distill.csv",
+    "selection":  "self-distillation: targets are the equal average of the Gemini relabels and the held-out fold-teacher predictions (model44/model45); same maxspan recipe and selection as model16/model38"
+}

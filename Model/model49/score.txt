@@ -1,0 +1,1 @@
+﻿public AUC 0.940 (submission 56318305) - identical to model23 baseline; member fine-tuning is neutral

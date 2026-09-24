@@ -1,0 +1,16 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 5.5,
+  "pilot_max_hours": 30,
+  "max_hourly_usd": 0.25,
+  "min_reliability": 0.97,
+  "gpu_names": ["A40", "RTX 3090", "RTX 4090", "RTX 3080 Ti", "RTX 3080", "RTX A5000", "RTX A4000", "RTX 4080", "A10", "L4"],
+  "min_gpu_ram": 15000,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model71-resnet34-5fold",
+  "policy": "Five sequential folds of the model65 recipe on one rental (~0.7 USD and ~3.5 h per fold at 0.19/h). User budget for this phase 18 USD (~3.5 used), but the Vast account only had 1.35 USD credit on 2026-09-23, so this run is capped at one fold; raise the cap to ~5.5 and relaunch (the script skips folds already marked complete) once the account is topped up. Smoke gates training; guard backs up and destroys on completion or failure."
+}

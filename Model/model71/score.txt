@@ -1,0 +1,1 @@
+﻿5-fold gold: 0.9031 0.9024 0.9023 0.8937 0.9065 | ensemble 0.9138 (model65 single 0.9104). As a blend arm at w=0.30: 0.9312 -> 0.9323 (+0.0011, P>0 0.69) = not adopted. Not submitted; the run's value is its out-of-fold predictions.

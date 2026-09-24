@@ -1,0 +1,8 @@
+Adapted DINOv3 inference components from Mattia Angeli's public notebook:
+https://www.kaggle.com/code/mattiaangeli/bend-the-knee-to-dinov3-ensembled
+The original notebook is released under Apache License 2.0.
+Preprocessing, architecture classes, and normalization are adapted from its
+standalone DINOv3 member. Changes are recorded in readme.txt and inference.py.
+Checkpoint source: https://www.kaggle.com/datasets/mattiaangeli/knee-mri-fold-weights
+Underlying backbone: Meta DINOv3, https://github.com/facebookresearch/dinov3
+Backbone license: https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md

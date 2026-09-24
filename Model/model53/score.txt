@@ -1,0 +1,1 @@
+﻿public AUC 0.942 (submission 56327619) - identical to model43; the higher CoAtNet blend weight is neutral

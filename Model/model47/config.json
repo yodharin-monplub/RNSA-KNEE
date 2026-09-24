@@ -1,0 +1,14 @@
+{
+  "seed": 20260928,
+  "epochs": 1,
+  "batch_size": 4,
+  "workers": 4,
+  "encoder_lr": 0.000005,
+  "head_lr": 0.00001,
+  "weight_decay": 0.01,
+  "teacher_weight": 0.3,
+  "gradient_clip": 1.0,
+  "subset_fraction": 0.8,
+  "targets": "data/llm_relabel/targets_g38f_low.csv",
+  "selection": "fixed one epoch per member on a member-specific random 80% of the non-gold studies; no checkpoint selection, gold58 never trained on and used only to report each member's before/after AUC"
+}
