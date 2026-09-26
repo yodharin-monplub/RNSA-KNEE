@@ -1,5 +1,5 @@
 {
-  "campaign_cap_usd": 20,
+  "campaign_cap_usd": 25,
   "pilot_cap_usd": 2.7,
   "pilot_max_hours": 6,
   "max_hourly_usd": 0.4,
@@ -7,5 +7,5 @@
   "max_transfer_gb": 40,
   "max_transfer_usd_per_gb": 0.005,
   "label": "rsna-knee-model16-finetune",
-  "policy": "One rental. Verify readiness before launch; backup then destroy on completion. Stop before cap with reserve. No credit purchases."
+  "policy": "One rental. Verify readiness before launch; backup then destroy on completion. Stop before cap with reserve. No credit purchases. Campaign cap 20 -> 22 (2026-09-25, model72) -> 25 (2026-09-26, model73 CoAtNet full-train, approved by the user with 'ok go'). The gate total (19.38) overstates this project: it takes max(estimated, observed credit drop) and the observed drops include the other projects sharing this Vast account. RSNA estimated compute to date = 15.79 USD. User told both times."
 }

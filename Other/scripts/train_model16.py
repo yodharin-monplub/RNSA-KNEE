@@ -164,11 +164,13 @@ def main():
     if scratch:
         # New model family: ImageNet backbone, every parameter trained, no teacher.
         import timm
-        arch = config['arch']; student = Classifier(arch)
+        arch = config['arch']; student = Classifier(arch, img_size=config.get('backbone_img_size'))
         # Rentals may not reach the HF hub; weights come from a verified local file when configured.
         overlay = {'file': str(ROOT/config['pretrained_file'])} if config.get('pretrained_file') else None
         student.backbone = timm.create_model(arch, pretrained=True, num_classes=0, in_chans=3, global_pool='avg',
-                                             pretrained_cfg_overlay=overlay)
+                                             pretrained_cfg_overlay=overlay,
+                                             **({'img_size': config['backbone_img_size']}
+                                                if config.get('backbone_img_size') else {}))
         assert student.backbone.num_features == student.clsW.shape[1]
         teacher = None
         student = student.to(device).requires_grad_(True)

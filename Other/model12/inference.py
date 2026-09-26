@@ -32,10 +32,13 @@ LABELS = ['ACL', 'MCL', 'Medial Meniscus', 'Lateral Meniscus', 'Medial OA',
 
 
 class Classifier(nn.Module):
-    def __init__(self, arch):
+    def __init__(self, arch, img_size=None):
         super().__init__()
+        # img_size is only passed when a config asks for it: CoAtNet rmlp backbones bake the relative
+        # position bias for their native resolution (384 -> 576 tokens) and must be rebuilt for another one.
+        extra = {'img_size': img_size} if img_size else {}
         self.backbone = timm.create_model(arch, pretrained=False, num_classes=0,
-                                          in_chans=3, global_pool='avg')
+                                          in_chans=3, global_pool='avg', **extra)
         dim = self.backbone.num_features
         self.norm = nn.LayerNorm(dim)
         self.att = nn.Sequential(nn.Linear(dim, 256), nn.Tanh(), nn.Dropout(.2), nn.Linear(256, 12))

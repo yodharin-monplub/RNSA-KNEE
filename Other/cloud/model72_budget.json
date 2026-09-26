@@ -1,0 +1,16 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 1.5,
+  "pilot_max_hours": 9,
+  "max_hourly_usd": 0.25,
+  "min_reliability": 0.97,
+  "gpu_names": ["A40", "RTX 3090", "RTX 4090", "RTX 3080 Ti", "RTX 3080", "RTX A5000", "RTX A4000", "RTX 4080", "A10", "L4"],
+  "min_gpu_ram": 15000,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model72-effb0-288",
+  "policy": "One full-data run of the model65 recipe with EfficientNet-B0 at 288 px (~2 h, ~0.5 USD at 0.22/h). AGENTS.md option B: cheapest suitable offer, one instance at a time. Smoke gates training; guard backs up and destroys on completion or failure."
+}

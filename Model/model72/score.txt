@@ -1,0 +1,1 @@
+﻿gold 0.9143 (58 gold cases, epoch 17 of 25, weak-val BCE 0.3174). Best single image model so far: model65 ResNet34 0.9104, model71 5-fold 0.9138, CoAtNet arm 0.925. Blend +0.0016 (P>0 0.75) = not adopted. Not submitted. Vast cost 0.37 USD.

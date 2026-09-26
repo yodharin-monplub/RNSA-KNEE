@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 RUN_NAME = os.environ.get('RSNA_CLOUD_RUN', 'model16')
 # Later runs reuse an earlier run's verified cache and initial checkpoint.
-DATA_RUN = {'model71': 'model16', 'model68': 'model16', 'model69': 'model16', 'model65': 'model16', 'model66': 'model16', 'model63': 'model16', 'model64': 'model16', 'model25': 'model16', 'model27': 'model16', 'model34': 'model16', 'model36': 'model16', 'model38': 'model16', 'model60': 'model16', 'model59': 'model16', 'model58': 'model16', 'model56': 'model22', 'model55': 'model28', 'model54': 'model20', 'model52': 'model16', 'model51': 'model16', 'model46': 'model16', 'model45': 'model16', 'model44': 'model16', 'model42': 'model16', 'model41': 'model22', 'model40': 'model28', 'model39': 'model20', 'model31': 'model28', 'model32': 'model20'}.get(RUN_NAME, RUN_NAME)
+DATA_RUN = {'model73': 'model16', 'model72': 'model16', 'model71': 'model16', 'model68': 'model16', 'model69': 'model16', 'model65': 'model16', 'model66': 'model16', 'model63': 'model16', 'model64': 'model16', 'model25': 'model16', 'model27': 'model16', 'model34': 'model16', 'model36': 'model16', 'model38': 'model16', 'model60': 'model16', 'model59': 'model16', 'model58': 'model16', 'model56': 'model22', 'model55': 'model28', 'model54': 'model20', 'model52': 'model16', 'model51': 'model16', 'model46': 'model16', 'model45': 'model16', 'model44': 'model16', 'model42': 'model16', 'model41': 'model22', 'model40': 'model28', 'model39': 'model20', 'model31': 'model28', 'model32': 'model20'}.get(RUN_NAME, RUN_NAME)
 load_dotenv(ROOT/'.env')
 os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY', ''))
 from kaggle.api.kaggle_api_extended import KaggleApi

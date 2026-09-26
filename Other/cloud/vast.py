@@ -32,7 +32,12 @@ def api(method, path, payload=None):
 
 
 def ssh_command(state):
-    return ['ssh', '-F', os.devnull, '-i', str(ssh_key()), '-p', str(state['ssh_port']),
+    # An empty file we own, not os.devnull: under Git Bash 'nul' is a plain relative path, so ssh fails with
+    # "Can't open user config file nul" and every deploy attempt dies (2026-09-25).
+    empty = ROOT / '.cache/ssh/empty_config'
+    empty.parent.mkdir(parents=True, exist_ok=True)
+    empty.touch(exist_ok=True)
+    return ['ssh', '-F', str(empty), '-i', str(ssh_key()), '-p', str(state['ssh_port']),
             '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15',
             '-o', 'StrictHostKeyChecking=accept-new', '-o', 'ServerAliveInterval=30',
             '-o', 'UserKnownHostsFile="' + str(ROOT / '.cache/ssh/known_hosts') + '"',
