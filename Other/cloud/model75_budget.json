@@ -1,0 +1,22 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 3.5,
+  "pilot_max_hours": 24,
+  "max_hourly_usd": 0.24,
+  "min_reliability": 0.97,
+  "gpu_names": [
+    "RTX 3090",
+    "RTX 4090",
+    "RTX A5000",
+    "RTX 3090 Ti",
+    "L40S"
+  ],
+  "min_gpu_ram": 23000,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model75-coatnet2-384",
+  "policy": "Full-train CoAtNet-2 at 384 px with model73's working recipe (~12 h, ~2-2.5 USD at ~0.18/h on a 24 GB card). AGENTS.md option B: cheapest suitable offer, one instance. Smoke run gates training and catches an out-of-memory before real money. Guard backs up and destroys on completion."
+}

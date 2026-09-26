@@ -187,6 +187,9 @@ def main():
         student.backbone.requires_grad_(False)
         trainable_stages = student.backbone.stages[-int(config.get('unfreeze_stages', 1)):]
         trainable_stages.requires_grad_(True)
+        if config.get('grad_checkpointing'):
+            # model79: unfreezing every stage at 384 px needs the same memory saving as the scratch runs
+            student.backbone.set_grad_checkpointing(True)
     external = aux_heads = None
     if config.get('external'):
         # Auxiliary supervision from MRNet / fastMRI+ / KneeMRI through separate heads (knee/external.py).

@@ -1,0 +1,22 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 2.5,
+  "pilot_max_hours": 16,
+  "max_hourly_usd": 0.24,
+  "min_reliability": 0.97,
+  "gpu_names": [
+    "RTX 3090",
+    "RTX 4090",
+    "RTX A5000",
+    "RTX 3090 Ti",
+    "L40S"
+  ],
+  "min_gpu_ram": 23000,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model79-raptor-full-finetune",
+  "policy": "Full fine-tune of the public Raptor maxspan CoAtNet-2 at 384 px (all stages, 10 epochs; ~5-7 h, ~1-1.3 USD at ~0.18/h on a 24 GB card). Option B: cheapest suitable offer, ONE instance - launch only after model75 has finished. Smoke gates training; guard backs up and destroys on completion."
+}

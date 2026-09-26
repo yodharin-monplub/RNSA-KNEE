@@ -1,16 +1,15 @@
 {
   "campaign_cap_usd": 38,
-  "pilot_cap_usd": 2.5,
-  "pilot_max_hours": 20,
-  "max_hourly_usd": 0.3,
+  "pilot_cap_usd": 4.0,
+  "pilot_max_hours": 22,
+  "max_hourly_usd": 0.24,
   "min_reliability": 0.97,
   "gpu_names": [
-    "A40",
     "RTX 3090",
     "RTX 4090",
     "RTX A5000",
-    "L40S",
-    "RTX 3090 Ti"
+    "RTX 3090 Ti",
+    "L40S"
   ],
   "min_gpu_ram": 23000,
   "disk_gb": 100,
@@ -19,5 +18,5 @@
   "max_transfer_gb": 60,
   "max_transfer_usd_per_gb": 0.005,
   "label": "rsna-knee-model73-coatnet2-fulltrain",
-  "policy": "Full-train CoAtNet-2 at 256 px with the model65/model72 recipe (~10-14 h, ~2.2-2.6 USD at 0.22/h on a 24 GB card). AGENTS.md option B: cheapest suitable offer, one instance. The smoke run gates training and will also catch an out-of-memory before the money is spent. Guard backs up and destroys on completion."
+  "policy": "Full-train CoAtNet-2 at 256 px, model65/model72 recipe, gradient checkpointing (12-18 h, 2.4-3.6 USD at ~0.20/h). Cap 4.0 inside the 25 USD campaign rail. Attempt 1 died on the 384-px position bias (0.12 USD), attempt 2 on a broken host, attempt 3 on out-of-memory (0.16 USD) - the smoke run caught all three before real money. User was sent options A/B/C and had not replied after an hour; A (this one, recipe unchanged) was the recommendation and AGENTS.md grants permission to rent without asking."
 }
