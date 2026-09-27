@@ -1,0 +1,27 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 2.5,
+  "pilot_max_hours": 16,
+  "max_hourly_usd": 0.25,
+  "min_reliability": 0.97,
+  "gpu_names": [
+    "A40",
+    "RTX 3090",
+    "RTX 4090",
+    "RTX 3080 Ti",
+    "RTX 3080",
+    "RTX A5000",
+    "RTX A4000",
+    "RTX 4080",
+    "A10",
+    "L4"
+  ],
+  "min_gpu_ram": 15000,
+  "disk_gb": 100,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model82-effb0-288-5fold",
+  "policy": "model72's EfficientNet-B0 288 px recipe as 5 report-group folds on one rental (~9-10 h, ~1.5-2 USD at ~0.18/h). Option B: cheapest suitable offer, ONE instance - launch only after model75 has finished. Smoke gates training; folds resume after a restart; guard backs up and destroys on completion or failure."
+}

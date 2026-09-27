@@ -1,0 +1,22 @@
+{
+  "seed": 20261007,
+  "epochs": 10,
+  "train_windows": 16,
+  "batch_size": 8,
+  "workers": 6,
+  "encoder_lr": 1e-05,
+  "head_lr": 0.0001,
+  "warmup_ratio": 0.1,
+  "min_lr_ratio": 0.01,
+  "weight_decay": 0.02,
+  "teacher_weight": 0.0,
+  "gradient_clip": 1.0,
+  "plain_bce": true,
+  "augment": true,
+  "unfreeze_stages": 4,
+  "grad_checkpointing": true,
+  "chunk": 16,
+  "log_gold_each_epoch": true,
+  "targets": "data/llm_relabel/targets_g38f_low.csv",
+  "selection": "FULL fine-tune of the public Raptor maxspan checkpoint (dreaddevelopment raptor_ft_coatnet_v5_full_swa.pt, CoAtNet-2 at 384 px) on the Gemini v1 labels: all four CoAtNet stages trainable, plain soft-label BCE, GPU augmentation, no teacher distillation, 10 epochs, encoder LR 1e-5 / head 1e-4 with 10% warmup and cosine decay, gradient checkpointing. model38 - the maxspan arm in our 0.943 blend - trained only the LAST stage for 2 epochs at LR 5e-6 with distillation and confidence-weighted BCE (gold 0.9254; head retrain on full bags then 0.9308). Every LB gain this project has had came from better Raptor weights (+0.001 per step), so a genuine full adaptation is the next step of that ladder. The untouched public checkpoint is the epoch-0 candidate, and the epoch is chosen by weak-val BCE, so a harmful fine-tune cannot be selected."
+}

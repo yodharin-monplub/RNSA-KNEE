@@ -1,0 +1,27 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 1.0,
+  "pilot_max_hours": 5,
+  "max_hourly_usd": 0.25,
+  "min_reliability": 0.97,
+  "gpu_names": [
+    "A40",
+    "RTX 3090",
+    "RTX 4090",
+    "RTX 3080 Ti",
+    "RTX 3080",
+    "RTX A5000",
+    "RTX A4000",
+    "RTX 4080",
+    "A10",
+    "L4"
+  ],
+  "min_gpu_ram": 15000,
+  "disk_gb": 120,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model86-effb0-256-dense128",
+  "policy": "One full-data run of model72's EfficientNet-B0 recipe on the 128-frame 256 px cache (~2.5-3 h, ~0.5-0.7 USD). Option B: cheapest suitable offer, ONE instance - launch only after model75 (and model84) have finished. Smoke gates training; guard backs up and destroys on completion or failure. 2026-09-27 13:30: account credit 1.94 USD with another project's instance (alpha-connectome, 0.19 USD/h) also running, so the cap is 1.0 USD (guard stops at 0.75) to leave that project runway if no top-up arrives."
+}

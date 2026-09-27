@@ -1,0 +1,2 @@
+public LB 0.945 (submission 56587720, submitted 2026-09-27 02:55 +07, scored ~09:20 +07 -> ~7.4 h hidden rerun incl. queue)
+leaderboard 2026-09-27 02:29 UTC: rank 134 of 4,407 teams (silver zone; rank 100 = 0.947, rank 220 = 0.943)

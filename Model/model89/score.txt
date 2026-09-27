@@ -1,0 +1,2 @@
+public LB 0.939 (submission 56602006, scored 2026-09-27 ~14:40 +07)
+model75 alone (CoAtNet-2 384 px, full training, gold 0.9204). Fleet with it (model88) 0.938; fleet without it (model81) 0.933.

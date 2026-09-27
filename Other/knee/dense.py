@@ -17,7 +17,10 @@ class DenseCache:
         self.open_arrays = OrderedDict()
         self.max_open_shards = max_open_shards
         self.size = int(self.verified['geometry']['size'])
-        assert self.size in (336, 384)
+        assert self.size in (256, 336, 384)
+        # 64-frame arrays for the 64- and 44-slot layouts, 128 for the 128-slot layout
+        slot_frames = sum(int(slot[2]) for slot in self.verified['geometry']['slots'])
+        self.frames = 128 if slot_frames == 128 else 64
         assert max_open_shards >= 1
 
     def __len__(self):
@@ -38,6 +41,6 @@ class DenseCache:
         row = self.index.iloc[i]
         volume = np.array(self._open(row.volume_file)[int(row.row)], copy=True)
         mask = np.array(self._open(row.mask_file)[int(row.row)], dtype=bool, copy=True)
-        assert volume.shape == (64, self.size, self.size) and volume.dtype == np.uint8
-        assert mask.shape == (64,) and mask.any()
+        assert volume.shape == (self.frames, self.size, self.size) and volume.dtype == np.uint8
+        assert mask.shape == (self.frames,) and mask.any()
         return volume, mask

@@ -18,7 +18,7 @@ from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import roc_auc_score
 from knee.dense import DenseCache
-from cloud.prepare_dense_cache import EXPECTED_GEOMETRY, SLOTS44
+from cloud.prepare_dense_cache import EXPECTED_GEOMETRY, SLOTS44, SLOTS128
 from model12.inference import Classifier, LABELS, UID, windows
 
 
@@ -88,10 +88,10 @@ def main():
     parser.add_argument('--output', default='artifacts/model16')
     parser.add_argument('--smoke', action='store_true')
     parser.add_argument('--config', default=str(ROOT/'model16/config.json'))
-    parser.add_argument('--cache-size', type=int, choices=[336,384], default=336)
+    parser.add_argument('--cache-size', type=int, choices=[256,336,384], default=336)
     parser.add_argument('--span-start', type=float, default=.02)
     parser.add_argument('--span-end', type=float, default=.98)
-    parser.add_argument('--slots', type=int, choices=[64, 44], default=64)
+    parser.add_argument('--slots', type=int, choices=[64, 44, 128], default=64)
     # model71: one config, five k-fold runs; the shell loop passes the fold index here.
     parser.add_argument('--fold', help="override config['fold'] (k-fold index, or the legacy A/B half)")
     args = parser.parse_args()
@@ -111,6 +111,8 @@ def main():
     expected_geometry['span'] = [args.span_start,args.span_end]
     if args.slots == 44:
         expected_geometry['slots'] = SLOTS44
+    if args.slots == 128:
+        expected_geometry['slots'] = SLOTS128
     assert cache.verified['geometry'] == expected_geometry
     assert cache.verified['source_metadata_sha256'] == hashlib.sha256((ROOT/'data/train.csv').read_bytes()).hexdigest()
     partition = pd.read_csv(ROOT/'artifacts/partitions/partitions.csv').set_index(UID)

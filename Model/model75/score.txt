@@ -1,0 +1,5 @@
+gold AUC 0.9204 (58 cases), selected epoch 16 of 25 by weak-validation BCE 0.3106 - best single fully trained model of the project.
+As a fifth Raptor view (pre-declared share w 0.30, notebook-way probability mean): 0.9326 -> 0.9343 (+0.0017, P>0 0.79) = below the +0.002 bar.
+As a fleet member: fleet 72+71+73+75 alone 0.9265 (fleet3 0.9258); final rank blend w 0.25/0.35/0.45 -> +0.0016/+0.0020/+0.0022.
+Vast: RTX 3090 0.2156 USD/h, 11.85 h, ~2.56 USD.
+public LB 0.939 alone (model89, submission 56602006) - the best single model this project has trained.

@@ -1,0 +1,2 @@
+public LB 0.933 (submission 56593100, scored 2026-09-27 ~07:55 +07, ~25 min after submission)
+fleet = mean of model72 + model71 (5 folds) + model73; gold 0.9258 on the 58 cases.

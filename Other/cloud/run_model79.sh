@@ -23,6 +23,7 @@ for attempt in 1 2 3 4 5; do
 done
 if [[ "$installed" -ne 1 ]]; then
   printf 'Dependency installation failed after five attempts.\n' >> artifacts/install.log
+  touch artifacts/RUN_FAILED  # otherwise the guard never sees the failure and the rental idles to its cap
   exit 1
 fi
 python -m pip freeze > artifacts/environment.txt

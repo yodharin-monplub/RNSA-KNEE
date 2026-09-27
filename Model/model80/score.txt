@@ -1,0 +1,2 @@
+public LB 0.944 (submission 56593028, submitted 2026-09-27 07:26, scored ~14:55 +07 -> ~7.5 h incl. queue)
+model76 (0.945) + fleet3 (model72 + model71 x5 + model73; 0.933 alone) rank-blended at w 0.30 -> -0.001 vs model76.

@@ -15,6 +15,9 @@ EXPECTED_GEOMETRY = {
 # native384-v8 layout: 44 frames stored at the front of the same 64-frame arrays (rest zero/masked).
 SLOTS44 = [['Sagittal', 1, 12], ['Sagittal', 0, 10], ['Coronal', 1, 8],
            ['Coronal', 0, 6], ['Axial', -1, 8]]
+# 128 frames at 256 px: 24-32 slices per series (build: scripts/run_dense_cache_part.py --size 256 --slots 128).
+SLOTS128 = [['Sagittal', 1, 32], ['Sagittal', 0, 24], ['Coronal', 1, 24],
+            ['Coronal', 0, 24], ['Axial', -1, 24]]
 
 
 def prepare(manifests, train_path, destination, pilot=False, size=336, span=(.02,.98), slots=64):
@@ -26,12 +29,15 @@ def prepare(manifests, train_path, destination, pilot=False, size=336, span=(.02
     assert train.StudyInstanceUID.is_unique and len(train) == 4407
     expected_ids = set(train.StudyInstanceUID)
     metadata_hash = hashlib.sha256(Path(train_path).read_bytes()).hexdigest()
-    assert size in (336, 384)
+    assert size in (256, 336, 384)
     expected_geometry = dict(EXPECTED_GEOMETRY)
     expected_geometry['size'] = size
     expected_geometry['span'] = list(span)
     if slots == 44:
         expected_geometry['slots'] = SLOTS44
+    if slots == 128:
+        expected_geometry['slots'] = SLOTS128
+    frames = 128 if slots == 128 else 64   # the 44-slot layout is stored in 64-frame arrays
     rows, seen, parts, shard_names = [], set(), set(), set()
     for manifest_path in map(Path, manifests):
         manifest = json.loads(manifest_path.read_text())
@@ -56,9 +62,9 @@ def prepare(manifests, train_path, destination, pilot=False, size=336, span=(.02
                 volumes, masks = archive['volumes'], archive['masks']
             assert ids == shard['ids'] and len(set(ids)) == len(ids)
             assert not seen.intersection(ids) and set(ids).issubset(expected_ids)
-            assert volumes.dtype == np.uint8 and volumes.shape == (len(ids), 64, size, size)
-            assert masks.shape == (len(ids), 64)
-            assert np.array_equal(masks, volumes.reshape(len(ids), 64, -1).sum(2) > 0)
+            assert volumes.dtype == np.uint8 and volumes.shape == (len(ids), frames, size, size)
+            assert masks.shape == (len(ids), frames)
+            assert np.array_equal(masks, volumes.reshape(len(ids), frames, -1).sum(2) > 0)
             assert masks.any(axis=1).all()
             if slots == 44:
                 assert not volumes[:, 44:].any()
@@ -96,10 +102,10 @@ if __name__ == '__main__':
     parser.add_argument('--train', default='data/train.csv')
     parser.add_argument('--destination', required=True)
     parser.add_argument('--pilot', action='store_true')
-    parser.add_argument('--size', type=int, choices=[336,384], default=336)
+    parser.add_argument('--size', type=int, choices=[256,336,384], default=336)
     parser.add_argument('--span-start', type=float, default=.02)
     parser.add_argument('--span-end', type=float, default=.98)
-    parser.add_argument('--slots', type=int, choices=[64, 44], default=64)
+    parser.add_argument('--slots', type=int, choices=[64, 44, 128], default=64)
     args = parser.parse_args()
     assert (args.span_start,args.span_end) in ((.02,.98),(.06,.94))
     print(prepare(args.manifest, args.train, args.destination, args.pilot, args.size,

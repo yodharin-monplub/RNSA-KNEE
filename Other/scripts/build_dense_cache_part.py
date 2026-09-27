@@ -20,6 +20,8 @@ CACHE_SPAN = (.02, .98)
 SLOTS = [('Sagittal', 1, 18), ('Sagittal', 0, 14), ('Coronal', 1, 12),
          ('Coronal', 0, 8), ('Axial', -1, 12)]
 
+N_FRAMES = sum(count for _, _, count in SLOTS)   # 64 for the original layout
+
 LABELS = ['ACL', 'MCL', 'Medial Meniscus', 'Lateral Meniscus', 'Medial OA',
           'Lateral OA', 'PF OA', 'Effusion', 'Synovitis', "Baker's", 'Contusion', 'Fracture']
 
@@ -40,7 +42,7 @@ def ordered_files(directory):
     return records
 
 def read_study(uid, rows, series_root):
-    volume = np.zeros((64, CACHE_SIZE, CACHE_SIZE), dtype=np.uint8)
+    volume = np.zeros((N_FRAMES, CACHE_SIZE, CACHE_SIZE), dtype=np.uint8)
     used, offset, failed = set(), 0, 0
     for plane, fluid, count in SLOTS:
         candidates = [r for r in rows if r['Anatomical_Plane'] == plane and r['SeriesInstanceUID'] not in used]
@@ -83,7 +85,7 @@ def read_study(uid, rows, series_root):
                 crop = cv2.resize(array[y:y+size, x:x+size], (CACHE_SIZE,CACHE_SIZE), interpolation=cv2.INTER_AREA)
                 volume[offset] = (crop * 255).astype(np.uint8)
             offset += 1
-    mask = volume.reshape(64,-1).sum(1) > 0
+    mask = volume.reshape(N_FRAMES,-1).sum(1) > 0
     if not mask.any():
         raise ValueError('Study has no usable images')
     return volume, mask, failed
@@ -105,7 +107,7 @@ def main():
     out=Path('/kaggle/working')
     def read(uid):
         volume,mask,failed=read_study(uid,groups[uid],root/'train_series')
-        assert volume.shape==(64,CACHE_SIZE,CACHE_SIZE) and volume.dtype==np.uint8
+        assert volume.shape==(N_FRAMES,CACHE_SIZE,CACHE_SIZE) and volume.dtype==np.uint8
         return uid,volume,mask,failed
     manifest={'kind':'full_part','part':CACHE_PART,'parts':CACHE_PARTS,'studies':len(ids),'geometry':{'slots':SLOTS,'span':list(CACHE_SPAN),'crop_mm':140,'size':CACHE_SIZE},'shards':[]}
     with ThreadPoolExecutor(max_workers=4) as pool:

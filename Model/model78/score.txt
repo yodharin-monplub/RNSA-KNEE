@@ -1,0 +1,3 @@
+public LB 0.946 (submission 56603186, submitted 2026-09-27 ~15:25, scored ~22:05 +07) - NEW PROJECT BEST
+leaderboard 2026-09-27 15:07 UTC: rank 127 of 4,441 (rank 100 = 0.947, rank 220 = 0.943)
+model76 (0.945) + fleet4 (model72 + model71 x5 + model73 + model75; 0.938 alone) rank-blended at w 0.30.

@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ['KAGGLE_API_KEY'])
+os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY') or os.environ['KAGGLE_API_KEY_YODHAIRNMONPLUB'])
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 from kaggle.api.kaggle_api_extended import KaggleApi
 
@@ -39,6 +39,9 @@ ARMS = {
                known_gold=0.919671, extra_kernels=[]),
     'fine': dict(weights='rsna-knee-model41-weights', file='model41_best.pt', cache='rsna-knee-dense-cache-336-6-94-part{}',
                  known_gold=0.915969, extra_kernels=[]),
+    # model97 = model75 (CoAtNet-2 384 px trained from ImageNet, 0.939 public alone) with its head retrained on full bags
+    'model75': dict(weights='rsna-knee-fleet-weights', file='model75_best.pt', cache='rsna-knee-dense-cache-part{}',
+                    known_gold=0.920393, extra_kernels=[], prefix='model97'),
 }
 arm = sys.argv[1]
 spec = dict(ARMS[arm])
@@ -47,7 +50,7 @@ targets_file = sys.argv[3] if len(sys.argv) > 3 else 'targets_g38f_low.csv'
 assert bool(tag) == (len(sys.argv) > 3), 'give TAG and TARGETS_FILE together'
 if tag and not spec['extra_kernels']:
     spec['extra_kernels'] = [f'yodharinmonplub/rsna-knee-head-retrain-{arm}']  # saved window_features_fp16.npz
-output_prefix = tag or 'model61'
+output_prefix = tag or spec.get('prefix', 'model61')
 
 source = (ROOT / 'scripts/validate_dense_inference.py').read_text()
 head = source[:source.index('REFERENCE_CSV = ')]

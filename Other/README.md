@@ -1,6 +1,45 @@
 # RSNA Knee Abnormality Detection
 
-## Current status (2026-09-19)
+## Current status (2026-09-27)
+
+Best public AUC **0.946** (model78 = model76 + our own fleet), rank 127 of 4,441 on 2026-09-27 (rank 100 = 0.947,
+rank 220 = 0.943). Before that: model76 0.945 (rank 134).
+model76 is the strongest public notebook ("Bend the Knee to Speedy Raptors", 0.943) with its four Raptor CoAtNet
+views switched to this project's own weights (model61: Gemini-relabel fine-tunes with retrained heads). Our weights
+had lifted our own pipeline from 0.940 to 0.943; in the stronger public pipeline they add the same +0.002.
+
+| Model | Content | Public AUC |
+|---|---|---|
+| model61 | our pipeline: public ensemble + our Gemini-fine-tuned, head-retrained Raptor arms | 0.943 |
+| model70 | model61 with the fine-spacing arm at its 80-slice geometry | 0.943 |
+| model67 | model61 + full-trained ResNet34 arm | 0.942 |
+| model76 | Speedy Raptors (public 0.943) + our model61 Raptor weights | **0.945** |
+| model77 v2 | model76 + model73 as a fifth Raptor view | FAILED (NaN rows on the hidden set; v3 fixed, not submitted) |
+| model81 | our fully trained fleet alone (model72 + model71 x5 + model73), no public models | 0.933 |
+| model88 | the fleet alone with model75 (CoAtNet-2 384 px) added | 0.938 |
+| model89 | model75 alone (CoAtNet-2 at 384 px, trained from ImageNet) - our best own model | 0.939 |
+| model80 | model76 + the 3-member fleet blended in rank space at w 0.30 (d4-blend recipe) | 0.944 |
+| model78 | model76 + the 4-member fleet (with model75) at w 0.30 | **0.946** |
+
+### Final submission guidance
+
+Pick **model78** (0.946, Speedy + our Raptor weights + our own fleet) and **model76** (0.945, the same without the
+fleet) unless a later model beats them; if a private-LB shake-up worry dominates, swap model76 for **model61** (0.943,
+our own older pipeline). model80 (0.944) did not qualify.
+
+### What moved the score
+
+- Better Raptor weights, every step: Gemini relabels (0.941 -> 0.942), head retraining on full bags (0.943), and the
+  same weights inside the stronger Speedy pipeline (0.945).
+- Neutral or harmful on the leaderboard: extra views and single fully trained arms inside our blend (model26/30/67),
+  label-prompt variants, pseudo-labels for frozen-feature heads, external data, flip TTA.
+- Own models: full training of CoAtNet-2 at 384 px is the best recipe (model75 alone 0.939); small CNNs dilute it.
+  Blending own models into model76 needs an own side near ~0.943 to pay (model80: 0.933 fleet at w 0.30 = -0.001).
+- Next (see EXPERIMENTS.md): model79 full fine-tune of the public maxspan Raptor checkpoint; model90 (a second
+  CoAtNet-2 384 seed, 18 epochs); model86 (running) fleet model on a denser 128-frame cache; model84 pseudo-labels.
+  All need Vast credit (top-up requested 2026-09-27).
+
+## Status on 2026-09-19 (our own pipeline)
 
 Best verified public AUC **0.943** (model61). The public ensemble everyone forks scores 0.940-0.941; our
 gain comes from retraining its CoAtNet views on better training labels (0.942) and then retraining only
