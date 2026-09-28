@@ -1,9 +1,10 @@
 # RSNA Knee Abnormality Detection
 
-## Current status (2026-09-27)
+## Current status (2026-09-28)
 
-Best public AUC **0.946** (model78 = model76 + our own fleet), rank 127 of 4,441 on 2026-09-27 (rank 100 = 0.947,
-rank 220 = 0.943). Before that: model76 0.945 (rank 134).
+Best public AUC **0.946** (model78 / model93 / model94 tie), rank 131 of 4,474 on 2026-09-28 (gold line 0.955,
+rank 100 = 0.947, silver = top 5% = 0.944, bronze = top 10% = 0.943; 707 teams sit at >= 0.943, mostly copies of
+public notebooks). The best public notebooks score 0.945. Competition deadline: 2026-10-22.
 model76 is the strongest public notebook ("Bend the Knee to Speedy Raptors", 0.943) with its four Raptor CoAtNet
 views switched to this project's own weights (model61: Gemini-relabel fine-tunes with retrained heads). Our weights
 had lifted our own pipeline from 0.940 to 0.943; in the stronger public pipeline they add the same +0.002.
@@ -11,21 +12,32 @@ had lifted our own pipeline from 0.940 to 0.943; in the stronger public pipeline
 | Model | Content | Public AUC |
 |---|---|---|
 | model61 | our pipeline: public ensemble + our Gemini-fine-tuned, head-retrained Raptor arms | 0.943 |
-| model70 | model61 with the fine-spacing arm at its 80-slice geometry | 0.943 |
-| model67 | model61 + full-trained ResNet34 arm | 0.942 |
-| model76 | Speedy Raptors (public 0.943) + our model61 Raptor weights | **0.945** |
-| model77 v2 | model76 + model73 as a fifth Raptor view | FAILED (NaN rows on the hidden set; v3 fixed, not submitted) |
+| model76 | Speedy Raptors (public 0.943) + our model61 Raptor weights | 0.945 |
 | model81 | our fully trained fleet alone (model72 + model71 x5 + model73), no public models | 0.933 |
 | model88 | the fleet alone with model75 (CoAtNet-2 384 px) added | 0.938 |
 | model89 | model75 alone (CoAtNet-2 at 384 px, trained from ImageNet) - our best own model | 0.939 |
+| model92 / model91 | model72 alone (64-frame cache) / the same recipe on the 128-frame cache (model86) | 0.920 / 0.922 |
 | model80 | model76 + the 3-member fleet blended in rank space at w 0.30 (d4-blend recipe) | 0.944 |
 | model78 | model76 + the 4-member fleet (with model75) at w 0.30 | **0.946** |
+| model95 | model78 at fleet weight 0.40 | 0.945 |
+| model93 | model76 + model75 as a fifth Raptor view | **0.946** |
+| model94 | model93 + the fleet4 leg (w 0.30) | **0.946** |
 
 ### Final submission guidance
 
-Pick **model78** (0.946, Speedy + our Raptor weights + our own fleet) and **model76** (0.945, the same without the
-fleet) unless a later model beats them; if a private-LB shake-up worry dominates, swap model76 for **model61** (0.943,
-our own older pipeline). model80 (0.944) did not qualify.
+Pick **model94** (0.946: Speedy + our Raptor weights + model75 as a fifth view + our fleet leg - the fullest use of
+our own models) and **model78** (0.946, fleet leg only) unless a later model beats them. The public LB shows 3
+decimals, so these ties cannot be separated; if a private-LB shake-up worry dominates (most metals are copies of two
+public notebooks), prefer the candidate that leans more on our own models. model76 (0.945) is the plain fallback.
+
+### In progress (2026-09-28)
+
+- model99 = model78 + model86 (dense 128-frame EfficientNet) in the fleet: dummy run verified, submit 2026-09-29.
+- model79 (Vast): full fine-tune of the public maxspan Raptor checkpoint; deployment rule gold >= 0.9254.
+- model100: model75's recipe on the 96-frame 336 px cache (Vast next, or TPU).
+- model98: second CoAtNet-2 384 seed on a free Kaggle TPU v5e-8 (Other/scripts/train_xla.py, run_tpu_train.py):
+  launch bug fixed, logic tested locally; the run waits in Kaggle's batch TPU queue. k-fold support is ready for a
+  5-fold CoAtNet-2 384 (a 5-model fleet member and a strong OOF teacher for pseudo-labels).
 
 ### What moved the score
 

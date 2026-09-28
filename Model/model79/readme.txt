@@ -22,4 +22,23 @@ Deployment rule, fixed before the result: if model79's selected epoch scores >= 
 level - the maxspan weights that already gained on the LB), its checkpoint replaces the maxspan arm (forward and reverse
 views) of model76: model87, built with Other/scripts/run_raptor_swap.py --swap maxspan=model79_best.pt --dataset
 yodharinmonplub/rsna-knee-model79-weights. The leaderboard decides; below 0.9254 it is not submitted.
-Score: pending.
+LAUNCHED 2026-09-28 07:12 on Vast instance 53065087 (RTX 3090, 0.174 USD/h, cap 2.5 USD, deadline 11.4 h) after the user
+topped up Vast; the self-imposed campaign rail was raised 25 -> 35 USD (cloud/model16_budget.json, reason recorded).
+RESULT 2026-09-28 18:55 (Vast 53065087, 12.4 h, ~2.17 USD; backed up and destroyed by the guard at 19:38):
+epoch  weak-val BCE  gold AUC (58)
+  0      0.44384      0.9199   (the untouched public maxspan checkpoint)
+  1      0.28177      0.9212
+  2      0.28061      0.9261
+  3      0.27779      0.9223
+  4      0.27691      0.9246
+  5      0.27641      0.9213
+  6      0.27677      0.9244
+  7      0.27730      0.9213
+  8      0.27624      0.9219
+  9      0.27629      0.9205
+ 10      0.27449      0.9242   <- selected (lowest weak-val BCE)
+The full fine-tune learns the Gemini labels far better than the public checkpoint (weak-val BCE 0.444 -> 0.274), but
+gold stays at 0.920-0.926 - below model61's maxspan arm (0.9308 after its head retrain) and below the pre-declared
+deployment bar of 0.9254 (model38). RULE NOT MET -> model87 (swap into model76) is NOT built or submitted.
+Weights kept locally: Other/artifacts/remote_model79/model79/best.pt (sha in provenance / guard backup).
+Score: gold 0.9242 (selected epoch 10); not submitted (below the 0.9254 deployment bar).

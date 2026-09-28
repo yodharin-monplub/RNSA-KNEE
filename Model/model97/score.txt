@@ -1,0 +1,2 @@
+gold: model75 own head 0.9205 (reproduces its 0.9204) -> retrained head seeds 0.9169 / 0.9170 / 0.9165, final 0.9165 (-0.0040)
+NOT adopted (pre-declared: replace model75 only if the retrained head beats it on gold). Kaggle T4 3.2 h.

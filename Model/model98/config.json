@@ -10,7 +10,7 @@
   "epochs": 18,
   "train_windows": 16,
   "batch_size": 8,
-  "workers": 4,
+  "workers": 6,
   "encoder_lr": 2e-05,
   "head_lr": 0.001,
   "warmup_ratio": 0.1,
@@ -22,5 +22,6 @@
   "augment": true,
   "log_gold_each_epoch": true,
   "targets": "data/llm_relabel/targets_g38f_low.csv",
-  "selection": "model98 = model75's CoAtNet-2 384 recipe (seed 20261011, 18 epochs) trained on a Kaggle TPU v5e-8 with scripts/train_xla.py (bf16, 8 chips x 1 study of 16 windows = model75's global batch of 8). First run is the smoke test."
+  "selection": "model98 = model75's CoAtNet-2 384 recipe (gradient checkpointing, 16 windows/study, global batch 8, plain soft-label BCE on targets_g38f_low, augmentation, weak-val epoch selection) with seed 20261011 and 18 epochs (model75 selected epoch 16 of 25), trained on a Kaggle TPU v5e-8 with scripts/train_xla.py: bf16, 8 chips x 1 study of 16 windows = model75's global batch of 8.",
+  "grad_checkpointing": true
 }

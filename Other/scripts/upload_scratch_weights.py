@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ['KAGGLE_API_KEY'])
+os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY') or os.environ['KAGGLE_API_KEY_YODHAIRNMONPLUB'])
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 from kaggle.api.kaggle_api_extended import KaggleApi
 
@@ -24,7 +24,8 @@ metrics = json.loads((source / 'metrics.json').read_text())
 output = ROOT / f'artifacts/{run}_dataset'
 output.mkdir(exist_ok=True)
 shutil.copy2(source / 'best.pt', output / f'{run}_best.pt')
-shutil.copy2(ROOT / f'{run}/readme.txt', output / 'readme.txt')
+readme = next(p for p in (ROOT / f'{run}/readme.txt', ROOT.parent / f'Model/{run}/readme.txt') if p.is_file())
+shutil.copy2(readme, output / 'readme.txt')
 digest = hashlib.sha256((output / f'{run}_best.pt').read_bytes()).hexdigest()
 (output / 'dataset-metadata.json').write_text(json.dumps({
     'title': f'RSNA Knee {run.capitalize()} Weights', 'id': f'yodharinmonplub/rsna-knee-{run}-weights',

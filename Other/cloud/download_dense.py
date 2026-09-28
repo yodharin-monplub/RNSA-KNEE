@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 RUN_NAME = os.environ.get('RSNA_CLOUD_RUN', 'model16')
 # Later runs reuse an earlier run's verified cache and initial checkpoint.
-DATA_RUN = {'model90': 'model16', 'model86': 'dense128', 'model84': 'model16', 'model82': 'model16', 'model79': 'model16', 'model75': 'model16', 'model73': 'model16', 'model72': 'model16', 'model71': 'model16', 'model68': 'model16', 'model69': 'model16', 'model65': 'model16', 'model66': 'model16', 'model63': 'model16', 'model64': 'model16', 'model25': 'model16', 'model27': 'model16', 'model34': 'model16', 'model36': 'model16', 'model38': 'model16', 'model60': 'model16', 'model59': 'model16', 'model58': 'model16', 'model56': 'model22', 'model55': 'model28', 'model54': 'model20', 'model52': 'model16', 'model51': 'model16', 'model46': 'model16', 'model45': 'model16', 'model44': 'model16', 'model42': 'model16', 'model41': 'model22', 'model40': 'model28', 'model39': 'model20', 'model31': 'model28', 'model32': 'model20'}.get(RUN_NAME, RUN_NAME)
+DATA_RUN = {'model100': 'dense96', 'model90': 'model16', 'model86': 'dense128', 'model84': 'model16', 'model82': 'model16', 'model79': 'model16', 'model75': 'model16', 'model73': 'model16', 'model72': 'model16', 'model71': 'model16', 'model68': 'model16', 'model69': 'model16', 'model65': 'model16', 'model66': 'model16', 'model63': 'model16', 'model64': 'model16', 'model25': 'model16', 'model27': 'model16', 'model34': 'model16', 'model36': 'model16', 'model38': 'model16', 'model60': 'model16', 'model59': 'model16', 'model58': 'model16', 'model56': 'model22', 'model55': 'model28', 'model54': 'model20', 'model52': 'model16', 'model51': 'model16', 'model46': 'model16', 'model45': 'model16', 'model44': 'model16', 'model42': 'model16', 'model41': 'model22', 'model40': 'model28', 'model39': 'model20', 'model31': 'model28', 'model32': 'model20'}.get(RUN_NAME, RUN_NAME)
 load_dotenv(ROOT/'.env')
 os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY', ''))
 from kaggle.api.kaggle_api_extended import KaggleApi
@@ -70,7 +70,7 @@ def fetch(url, path, size, digest):
 
 def main():
     # Checked here, not at import, so other runs (e.g. model47) can reuse fetch/output_urls.
-    assert DATA_RUN in ('model16','model20','model22','model28','dense128')
+    assert DATA_RUN in ('model16','model20','model22','model28','dense128','dense96')
     api = KaggleApi(); api.authenticate()
     ready = json.loads((ROOT/f'cloud/{RUN_NAME}_ready.json').read_text())
     slug_template = {'model16':'rsna-knee-dense-cache-part{}',
@@ -78,7 +78,8 @@ def main():
                      'model22':'rsna-knee-dense-cache-336-6-94-part{}',
                      'model28':'rsna-knee-dense-cache-384-6-94-part{}-s44',
                      # Kaggle derived these slugs from the kernel titles
-                     'dense128':'rsna-knee-dense-cache-256-part{}-s128'}[DATA_RUN]
+                     'dense128':'rsna-knee-dense-cache-256-part{}-s128',
+                     'dense96':'rsna-knee-dense-cache-336-part{}-s96'}[DATA_RUN]
     for part, expected in enumerate(ready['manifests']):
         folder = ROOT/f'data/dense_shards/part{part}'
         folder.mkdir(parents=True,exist_ok=True)
@@ -114,7 +115,7 @@ def main():
                 print('Backbone retry',attempt+1,type(exc).__name__,flush=True)
                 if attempt==4: raise RuntimeError('Backbone download failed') from None
                 time.sleep(5)
-    if DATA_RUN == 'dense128':
+    if DATA_RUN in ('dense128', 'dense96'):
         # Only from-ImageNet runs use this cache; the fine-tune checkpoint is not needed, and Kaggle-API dataset
         # downloads crawl on some hosts (model86: ~37 KB/s -> ~2 h for this 300 MB file).
         return

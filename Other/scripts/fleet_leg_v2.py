@@ -51,7 +51,9 @@ def _m80_fleet_leg():
     GEOMETRIES = {'s64': ([('Sagittal', 1, 18), ('Sagittal', 0, 14), ('Coronal', 1, 12), ('Coronal', 0, 8),
                            ('Axial', -1, 12)], 336),
                   's128': ([('Sagittal', 1, 32), ('Sagittal', 0, 24), ('Coronal', 1, 24), ('Coronal', 0, 24),
-                            ('Axial', -1, 24)], 256)}
+                            ('Axial', -1, 24)], 256),
+                  's96': ([('Sagittal', 1, 24), ('Sagittal', 0, 18), ('Coronal', 1, 18), ('Coronal', 0, 18),
+                           ('Axial', -1, 18)], 336)}
     used_geometries = sorted({g for _, _, g in _M80_FLEET})
     assert set(used_geometries) <= set(GEOMETRIES), used_geometries
     sub_path = _P('/kaggle/working/submission.csv')

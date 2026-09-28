@@ -1,0 +1,2 @@
+public LB 0.922 (submission 56622724) - model86 ALONE (EfficientNet-B0, 128-frame 256 px dense cache)
+vs model92 = model72 alone (same recipe/seed, 64-frame 336 px cache, 288 px) 0.920 -> denser cache +0.002

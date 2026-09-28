@@ -1,0 +1,22 @@
+{
+  "campaign_cap_usd": 38,
+  "pilot_cap_usd": 2.8,
+  "pilot_max_hours": 16,
+  "max_hourly_usd": 0.24,
+  "min_reliability": 0.97,
+  "gpu_names": [
+    "RTX 3090",
+    "RTX 4090",
+    "RTX A5000",
+    "RTX 3090 Ti",
+    "L40S"
+  ],
+  "min_gpu_ram": 23000,
+  "disk_gb": 120,
+  "min_disk_bw": 1000,
+  "min_inet_up": 300,
+  "max_transfer_gb": 60,
+  "max_transfer_usd_per_gb": 0.005,
+  "label": "rsna-knee-model100-coatnet2-384-dense96",
+  "policy": "model75's CoAtNet-2 384 recipe on the 96-frame 336 px cache, 18 epochs (~10 h, ~1.7-2 USD at ~0.17-0.2/h on a 24 GB card). ONE instance: launch after model79. Other projects share the Vast credit."
+}

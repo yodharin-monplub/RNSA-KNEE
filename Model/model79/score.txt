@@ -1,0 +1,1 @@
+gold AUC 0.9242 (58 cases, selected epoch 10 by weak-val BCE 0.2745); below the 0.9254 deployment bar -> not submitted

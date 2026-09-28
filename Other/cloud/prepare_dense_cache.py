@@ -18,6 +18,9 @@ SLOTS44 = [['Sagittal', 1, 12], ['Sagittal', 0, 10], ['Coronal', 1, 8],
 # 128 frames at 256 px: 24-32 slices per series (build: scripts/run_dense_cache_part.py --size 256 --slots 128).
 SLOTS128 = [['Sagittal', 1, 32], ['Sagittal', 0, 24], ['Coronal', 1, 24],
             ['Coronal', 0, 24], ['Axial', -1, 24]]
+# 96 frames at 336 px (build: scripts/run_dense_cache_part.py --size 336 --slots 96).
+SLOTS96 = [['Sagittal', 1, 24], ['Sagittal', 0, 18], ['Coronal', 1, 18],
+           ['Coronal', 0, 18], ['Axial', -1, 18]]
 
 
 def prepare(manifests, train_path, destination, pilot=False, size=336, span=(.02,.98), slots=64):
@@ -37,7 +40,9 @@ def prepare(manifests, train_path, destination, pilot=False, size=336, span=(.02
         expected_geometry['slots'] = SLOTS44
     if slots == 128:
         expected_geometry['slots'] = SLOTS128
-    frames = 128 if slots == 128 else 64   # the 44-slot layout is stored in 64-frame arrays
+    if slots == 96:
+        expected_geometry['slots'] = SLOTS96
+    frames = slots if slots in (96, 128) else 64   # the 44-slot layout is stored in 64-frame arrays
     rows, seen, parts, shard_names = [], set(), set(), set()
     for manifest_path in map(Path, manifests):
         manifest = json.loads(manifest_path.read_text())
@@ -105,7 +110,7 @@ if __name__ == '__main__':
     parser.add_argument('--size', type=int, choices=[256,336,384], default=336)
     parser.add_argument('--span-start', type=float, default=.02)
     parser.add_argument('--span-end', type=float, default=.98)
-    parser.add_argument('--slots', type=int, choices=[64, 44, 128], default=64)
+    parser.add_argument('--slots', type=int, choices=[64, 44, 96, 128], default=64)
     args = parser.parse_args()
     assert (args.span_start,args.span_end) in ((.02,.98),(.06,.94))
     print(prepare(args.manifest, args.train, args.destination, args.pilot, args.size,

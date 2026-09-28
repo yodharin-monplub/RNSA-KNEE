@@ -11,4 +11,6 @@ Kaggle: yodharinmonplub/rsna-knee-model91-model86-alone-dense128 v1 pushed 2026-
 the daily quota resets (00:00 UTC = 07:00 Bangkok).
 Dummy run VERIFIED 2026-09-27 ~18:28 (from outputs - the kernel-status API was rate-limited): model86 read at 's128',
 3/3 studies, 1 checkpoint, 14 s on 2 GPUs. Submit after 07:00.
-Score: pending.
+SUBMITTED 2026-09-28 ~07:05 (+07), submission 56622724.
+SCORE: public 0.922 vs model92 0.920 -> the 128-frame cache helps the same recipe/seed by +0.002 (LB), matching its lower
+weak-val BCE (0.3119 vs 0.3174). model99 (fleet with model86) qualifies by its pre-declared rule.

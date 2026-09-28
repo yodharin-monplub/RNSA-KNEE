@@ -11,7 +11,7 @@ load_dotenv(ROOT/'.env');os.environ.setdefault('KAGGLE_API_TOKEN',os.environ['KA
 os.environ['KAGGLE_CONFIG_DIR']=str(ROOT/'.kaggle')
 from kaggle.api.kaggle_api_extended import KaggleApi
 
-parser=argparse.ArgumentParser();parser.add_argument('--part',type=int,choices=range(4),required=True);parser.add_argument('--size',type=int,choices=[256,336,384],default=336);parser.add_argument('--span',choices=['2-98','6-94'],default='2-98');parser.add_argument('--slots',type=int,choices=[64,44,128],default=64);parser.add_argument('--dry',action='store_true');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--part',type=int,choices=range(4),required=True);parser.add_argument('--size',type=int,choices=[256,336,384],default=336);parser.add_argument('--span',choices=['2-98','6-94'],default='2-98');parser.add_argument('--slots',type=int,choices=[64,44,96,128],default=64);parser.add_argument('--dry',action='store_true');args=parser.parse_args()
 api=KaggleApi();api.authenticate();user=api.get_config_value('username')
 span_tag='' if args.span=='2-98' else '_6_94'
 span_slug='' if args.span=='2-98' else ('-336-6-94' if args.size==336 else '-6-94')
@@ -29,6 +29,10 @@ if args.slots==44:
     assert source.count(SLOTS64_SRC)==1;source=source.replace(SLOTS64_SRC,SLOTS44_SRC)
 if args.slots==128:
     assert source.count(SLOTS64_SRC)==1;source=source.replace(SLOTS64_SRC,SLOTS128_SRC)
+# 96 frames at 336 px for the CoAtNet-2 384 recipe (the 128-frame 256 px cache helped EfficientNet-B0 by +0.002 LB)
+SLOTS96_SRC="SLOTS = [('Sagittal', 1, 24), ('Sagittal', 0, 18), ('Coronal', 1, 18),\n         ('Coronal', 0, 18), ('Axial', -1, 18)]"
+if args.slots==96:
+    assert source.count(SLOTS64_SRC)==1;source=source.replace(SLOTS64_SRC,SLOTS96_SRC)
 (out/'inference.py').write_text(source)
 title=(f'RSNA Knee Dense Cache {args.size} {args.span} Part{args.part}' if args.span!='2-98' else f'RSNA Knee Dense Cache {args.size} Part{args.part}')+('' if args.slots==64 else f' S{args.slots}')
 meta={'id':f'{user}/rsna-knee-dense-cache{slug}-part{args.part}','title':title,

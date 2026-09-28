@@ -1,3 +1,4 @@
 weak-validation BCE 0.3119 (epoch 24) vs model72 0.3174 - better at every epoch from 15 on
 gold AUC 0.9102 vs model72 0.9143 (-0.0041, 95% CI [-0.0195, +0.0108], P>0 0.29 - noise level)
 Vast RTX 3090 0.18 USD/h, 3.19 h, ~0.57 USD
+public LB 0.922 alone (model91) vs 0.920 for model72 (same recipe/seed on the 64-frame cache): the denser cache helps.

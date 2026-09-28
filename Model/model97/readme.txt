@@ -10,4 +10,9 @@ features to reproduce model75's gold 0.9204 before training). Pushed 2026-09-28 
 use ("both ok").
 Use: if the retrained head beats model75 on gold (and it is expected to), it replaces model75 in the fleet leg / as a
 Raptor view.
-Score: pending.
+RESULT (2026-09-28 04:45): features reproduce model75 (own head on them 0.9205 vs known 0.9204), but the retrained head is
+LOWER on every seed: 0.9169 / 0.9170 / 0.9165 (final 0.9165, -0.0040). NOT adopted. Unlike the lightly fine-tuned Raptor
+arms (whose heads had only seen 12-16 random windows at LR 1e-5 for 2 epochs), model75's head was trained jointly with its
+backbone for 16 epochs; re-fitting it on frozen features does not help. The extracted features
+(window_features_fp16.npz, 4,407 x 62 x 1024) stay in the kernel output for any later head experiment.
+Score: see score.txt.

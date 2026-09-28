@@ -21,4 +21,6 @@ after the daily quota resets (07:00 Bangkok).
 Dummy run VERIFIED 2026-09-27 ~18:59 (from outputs; the status API was rate-limited): our three model61 Raptor weights +
 model75_best.pt loaded (SHA-256 events), no public Raptor weights, "fifth view model75 added: ... 0/3 studies without a
 model75 value (0 past the 1500s allowance) ... 15s on 2 GPUs", no errors, submission.csv written. Submit after 07:00.
-Score: pending.
+SUBMITTED 2026-09-28 ~07:05 (+07), submission 56623019.
+Score: public 0.946 (scored 2026-09-28 14:26) = +0.001 vs model76 (0.945), equal to model78 (fleet4 leg, 0.946): model75
+helps as a fifth Raptor view about as much as the whole fleet leg does.

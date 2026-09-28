@@ -20,7 +20,7 @@ class DenseCache:
         assert self.size in (256, 336, 384)
         # 64-frame arrays for the 64- and 44-slot layouts, 128 for the 128-slot layout
         slot_frames = sum(int(slot[2]) for slot in self.verified['geometry']['slots'])
-        self.frames = 128 if slot_frames == 128 else 64
+        self.frames = slot_frames if slot_frames in (96, 128) else 64
         assert max_open_shards >= 1
 
     def __len__(self):

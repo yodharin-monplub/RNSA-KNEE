@@ -1,0 +1,1 @@
+public LB 0.920 (submission 56622827) - model72 ALONE (EfficientNet-B0 288 px, 64-frame cache, gold 0.9143)

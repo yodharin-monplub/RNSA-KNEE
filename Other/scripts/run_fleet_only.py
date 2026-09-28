@@ -34,7 +34,7 @@ def cell_for(fleet):
     head_end = s.index('def _m80_fleet_leg():')
     body = s[head_end:]
     members = ast.literal_eval(fleet)
-    assert all(g in ('s64', 's128') and all(f.endswith('.pt') for f in files) for _, files, g in members)
+    assert all(g in ('s64', 's96', 's128') and all(f.endswith('.pt') for f in files) for _, files, g in members)
     header = ("# ---- fleet ONLY (no public models): this project's fully trained models, mean probability ----\n"
               "# Each member is read at its training geometry ('s64' 64 frames @ 336 px, 's128' 128 frames @ 256 px).\n"
               "import os as _fo_os\n"

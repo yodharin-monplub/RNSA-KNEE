@@ -7,4 +7,8 @@ the leg's 9 h process-age guard; each addition falls back to the result without 
 Build: python Other/scripts/run_model94.py [--push] (imports run_model93.py and run_model80.py; files copied here).
 Kaggle: yodharinmonplub/rsna-knee-model94-coat75-view-plus-fleet4 v1 pushed 2026-09-27 ~22:20 (dummy run); submit after
 07:00 with model91/92/93/95.
-Score: pending.
+Dummy run VERIFIED 2026-09-28 06:48 (from outputs): model61 Raptor weights + model75 (fifth view, 0/3 without a value) +
+fleet4 leg (3/3 studies, 8 checkpoints), no public Raptor loads, no errors. Submit after 07:00.
+SUBMITTED 2026-09-28 ~07:05 (+07), submission 56623156.
+Score: public 0.946 (scored 2026-09-28 14:33) = same as model93 (fifth view only) and model78 (fleet leg only); the two
+uses of model75 do not stack visibly at 3 decimals.

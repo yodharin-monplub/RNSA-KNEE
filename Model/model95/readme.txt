@@ -5,4 +5,8 @@ Build: python Other/scripts/run_model80.py --name model95 --title "RSNA Knee Mod
 --with-model75 --weight 0.40 [--push].
 Kaggle: yodharinmonplub/rsna-knee-model95-speedy-our-heads-fleet4-w40 v1 pushed 2026-09-27 ~22:20 (dummy run); submit
 after 07:00.
-Score: pending.
+Dummy run VERIFIED 2026-09-28 06:48 (from outputs): model61 Raptor weights, fleet4 leg at w 0.40 (3/3 studies, 8
+checkpoints), no errors. Submit after 07:00.
+SUBMITTED 2026-09-28 ~07:05 (+07), submission 56623256.
+Score: public 0.945 (scored 2026-09-28 13:50) = -0.001 vs model78 (same leg at w 0.30, 0.946). A heavier fleet weight
+hurts: keep w 0.30 (model80 at w 0.30 without model75 was 0.944, model83 at w 0.45 dropped by its rule).

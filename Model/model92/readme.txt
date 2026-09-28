@@ -7,4 +7,5 @@ Build: python Other/scripts/run_fleet_only.py --name model92 --title "RSNA Knee 
 Kaggle: yodharinmonplub/rsna-knee-model92-model72-alone v1 pushed 2026-09-27 ~16:55 (dummy run); submit after 07:00.
 Dummy run VERIFIED 2026-09-27 ~18:30 (from outputs): model72 read at 's64', 3/3 studies, 1 checkpoint, 14 s. Submit
 after 07:00.
-Score: pending.
+SUBMITTED 2026-09-28 ~07:05 (+07), submission 56622827.
+SCORE: public 0.920 - far below model75 alone (0.939) although gold had them 0.006 apart (0.9143 vs 0.9204).

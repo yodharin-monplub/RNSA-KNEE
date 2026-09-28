@@ -1,5 +1,5 @@
 {
-  "campaign_cap_usd": 25,
+  "campaign_cap_usd": 35,
   "pilot_cap_usd": 2.7,
   "pilot_max_hours": 6,
   "max_hourly_usd": 0.4,
@@ -7,5 +7,5 @@
   "max_transfer_gb": 40,
   "max_transfer_usd_per_gb": 0.005,
   "label": "rsna-knee-model16-finetune",
-  "policy": "One rental. Verify readiness before launch; backup then destroy on completion. Stop before cap with reserve. No credit purchases. Campaign cap 20 -> 22 (2026-09-25, model72) -> 25 (2026-09-26, model73 CoAtNet full-train, approved by the user with 'ok go'). The gate total (19.38) overstates this project: it takes max(estimated, observed credit drop) and the observed drops include the other projects sharing this Vast account. RSNA estimated compute to date = 15.79 USD. User told both times."
+  "policy": "One rental. Verify readiness before launch; backup then destroy on completion. Stop before cap with reserve. No credit purchases. Campaign cap 20 -> 22 (2026-09-25, model72) -> 25 (2026-09-26, model73 CoAtNet full-train, approved by the user with 'ok go'). The gate total (19.38) overstates this project: it takes max(estimated, observed credit drop) and the observed drops include the other projects sharing this Vast account. RSNA estimated compute to date = 15.79 USD. User told both times. Raised 25 -> 35 on 2026-09-28: the user topped up Vast (credit 9.56 USD) and wrote 'vast top up if you needed' after being told the next runs (model79 Raptor full fine-tune, model90 CoAtNet-2 384 seed) need ~1.5-2.5 USD each. Other projects' instances share the credit, so one RSNA run at a time with its own cap."
 }
