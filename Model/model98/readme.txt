@@ -45,4 +45,15 @@ History:
   2026-09-28 15:00  kaggle-cli #1197 (maintainer): API pushes without a pinned docker_image DO get a TPU but wait in
                     the batch TPU queue (1 active-or-queued batch TPU session per user). v1 is presumably queued;
                     the user may cancel it and start from the editor instead (faster start).
+  2026-09-29 16:23-18:13  FIRST FULL TPU RUN (v2, from the batch queue): smoke passed; full cache unpack 737 s;
+                    epoch 1 1,559 s (XLA compilation), then ~285-300 s per epoch INCLUDING evaluation (~10x a 3090).
+                    Crashed in epoch 14: one chip process was killed abruptly (BrokenProcessPool, no Python traceback -
+                    probably the host OOM killer with 8 chips x ~10 resident loader workers). best.pt = epoch 13.
+                    Quality problem: weak-val BCE 0.374 at epoch 13 vs 0.316 for model75 (GPU, same recipe) at epoch
+                    13; gold similar (0.907 vs 0.910); gold predictions correlate 0.93-0.97 with model75's but several
+                    labels are shifted (less converged). Suspected cause: bf16 autocast on XLA also runs BatchNorm /
+                    LayerNorm in bf16 (CUDA fp16 autocast keeps their statistics in fp32).
+                    Fixes (2026-09-29 evening): fp32 by default (config xla_bf16 restores bf16), per-epoch last.pt +
+                    --resume (the kernel resumes a crashed run up to twice), eval loader workers not resident, host
+                    free-memory logging per epoch. Epoch-13 weights kept in Other/artifacts/remote_model98 (not used).
 Score: pending.

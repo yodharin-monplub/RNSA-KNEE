@@ -1,0 +1,1 @@
+public 0.937 as model101 (alone); partial run: 12 of 18 epochs, selected epoch 11, gold 0.9231

@@ -8,4 +8,6 @@ i.e. the denser cache helps a paired model; otherwise model86 stays out of the f
 Rule met 2026-09-28 07:27 (model91 0.922 > model92 0.920): dummy run pushed; verified 10:14 (fleet leg blended at w 0.30,
 3/3 dummy studies read by all 5 members, geometries s64 + s128, 50 s on 2 GPUs, valid submission). Submit with the
 next quota (after 07:00 Bangkok on 2026-09-29).
-Score: pending.
+SUBMITTED 2026-09-29 07:02 (+07), submission 56655870.
+Score: public 0.945 (scored 2026-09-29 13:50) = -0.001 vs model78 (same leg without model86, 0.946). The small dense
+EfficientNet adds nothing to the blend (consistent with weaker members diluting the CoAtNet-2 member).

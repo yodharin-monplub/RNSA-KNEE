@@ -1,0 +1,1 @@
+public 0.947 (submission 56656251, scored 2026-09-29 14:09) - NEW BEST: model76 + CoAtNet-only leg (model75 s64 + model100 s96) at w 0.30

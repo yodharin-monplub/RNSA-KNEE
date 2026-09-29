@@ -1,0 +1,1 @@
+public 0.945 (submission 56656299, scored 2026-09-29 13:54) - model76 + fleet6 leg (with model86 and model100) at w 0.30

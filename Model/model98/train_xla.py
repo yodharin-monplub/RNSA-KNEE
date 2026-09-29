@@ -18,6 +18,7 @@ Usage (in a Kaggle TPU notebook, cache/targets/partitions attached):
   python train_xla.py --cache /kaggle/tmp/dense --config config.json --output /kaggle/working/model98 [--smoke]
 """
 import argparse
+import contextlib
 import json
 import os
 import sys
@@ -139,11 +140,19 @@ def run(index, args):
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_factor)
     out = Path(args.output); out.mkdir(parents=True, exist_ok=True)
 
+    # Precision: fp32 by default. The first full TPU run used bf16 autocast (XLA then also runs BatchNorm/LayerNorm in
+    # bf16) and learned clearly worse than the fp16 GPU run of the same recipe (weak-val BCE 0.374 vs 0.316 at epoch 13,
+    # gold similar); the TPU is fast enough (~5 min/epoch in bf16) to afford fp32. config xla_bf16=true restores bf16.
+    use_bf16 = bool(config.get('xla_bf16', False))
+
+    def amp():
+        return torch.autocast('xla', dtype=torch.bfloat16) if use_bf16 else contextlib.nullcontext()
+
     def eval_loader(ids, labels_frame):
         data = EvalBags(args.cache, ids, labels_frame.loc[list(ids), LABELS].to_numpy(np.float32), res, max_eval)
         shard = DistributedSampler(data, num_replicas=world, rank=rank, shuffle=False, drop_last=False)
-        n = int(config.get('eval_workers', 2))
-        return data, DataLoader(data, batch_size=1, sampler=shard, num_workers=n, persistent_workers=n > 0)
+        n = int(config.get('eval_workers', 1))   # not persistent: 8 chips x resident loader workers may have OOM-killed a chip
+        return data, DataLoader(data, batch_size=1, sampler=shard, num_workers=n)
 
     val_eval, gold_eval = eval_loader(val_ids, targets), eval_loader(gold_ids, gold)
 
@@ -153,7 +162,7 @@ def run(index, args):
         preds, rows = [], []
         with torch.no_grad():
             for x, valid, target, i in dl:
-                with torch.autocast('xla', dtype=torch.bfloat16):
+                with amp():
                     feats = model.backbone(x.flatten(0, 1)).reshape(1, max_eval, -1)
                     logits = masked_predict(model, feats.float(), valid)
                 preds.append(logits.float().sigmoid()); rows.append(i)
@@ -167,6 +176,16 @@ def run(index, args):
 
     history, best, started = [], float('inf'), time.time()
     epoch = 0
+    last_path = out / 'last.pt'   # full training state after every epoch, so a crashed run can continue (--resume)
+    if args.resume and last_path.exists():
+        ck = torch.load(last_path, map_location='cpu', weights_only=False)
+        model.load_state_dict(ck['model'])
+        optimizer.load_state_dict(ck['optimizer'])      # state tensors follow their (XLA) parameters
+        scheduler.load_state_dict(ck['scheduler'])
+        history, best, epoch, plan_epochs = ck['history'], ck['best'], ck['epoch'], ck['plan_epochs']
+        total = steps_per_epoch * plan_epochs
+        if rank == 0:
+            print(f'resumed after epoch {epoch} of {plan_epochs} (best weak-val BCE {best:.4f})', flush=True)
     while epoch < plan_epochs:
         epoch += 1
         epoch_started = time.time()
@@ -174,7 +193,7 @@ def run(index, args):
         model.train()
         for step, (images, target) in enumerate(pl.MpDeviceLoader(loader, device)):
             optimizer.zero_grad(set_to_none=True)
-            with torch.autocast('xla', dtype=torch.bfloat16):
+            with amp():
                 b, k = images.shape[:2]
                 feats = model.backbone(images.flatten(0, 1)).reshape(b, k, -1)
                 logits = model.predict_features(feats.float()).float()
@@ -206,8 +225,14 @@ def run(index, args):
                       f'{args.stop_at - time.time():.0f}s)', flush=True)
             plan_epochs = agreed
             total = steps_per_epoch * plan_epochs
+        try:
+            import psutil
+            host_free = round(psutil.virtual_memory().available / 1e9, 1)
+        except Exception:
+            host_free = None
         history.append({'epoch': epoch, 'weak_val_bce': val_bce, 'gold_auc_descriptive': gold_auc,
-                        'elapsed_seconds': time.time() - started, 'epoch_seconds': seconds, 'plan_epochs': plan_epochs})
+                        'elapsed_seconds': time.time() - started, 'epoch_seconds': seconds, 'plan_epochs': plan_epochs,
+                        'host_free_gb': host_free})
         if rank == 0:
             print(json.dumps(history[-1]), flush=True)
             (out / 'history.json').write_text(json.dumps(history, indent=2))
@@ -220,15 +245,27 @@ def run(index, args):
                 pd.DataFrame(pg, index=pd.Index(gold_ids, name=UID), columns=LABELS).to_csv(out / 'gold_predictions.csv')
                 if oof_ids:
                     pd.DataFrame(pv, index=pd.Index(oof_ids, name=UID), columns=LABELS).to_csv(out / 'oof_predictions.csv')
+        if rank == 0 and (not args.smoke or config.get('smoke_saves_last')):
+            opt = optimizer.state_dict()
+            opt = {'state': {k: {n: v.detach().cpu() if torch.is_tensor(v) else v for n, v in s.items()}
+                             for k, s in opt['state'].items()}, 'param_groups': opt['param_groups']}
+            torch.save({'model': {k: v.detach().cpu() for k, v in model.state_dict().items()}, 'optimizer': opt,
+                        'scheduler': scheduler.state_dict(), 'history': history, 'best': best, 'epoch': epoch,
+                        'plan_epochs': plan_epochs}, out / 'last.tmp')
+            os.replace(out / 'last.tmp', last_path)
+        if os.environ.get('XLA_TEST_CRASH_AFTER_EPOCH') == str(epoch) and not args.resume:
+            raise SystemExit(f'test crash after epoch {epoch}')   # local test of --resume only
         xm.rendezvous(f'epoch{epoch}')
     if rank == 0:
         selected = history[-1] if select_last else min(history, key=lambda h: h['weak_val_bce'])
         metrics = {'selected_epoch': int(selected['epoch']), 'weak_val_bce': selected['weak_val_bce'],
                    'gold_auc': selected['gold_auc_descriptive'], 'fold': fold, 'oof_written': len(oof_ids),
                    'elapsed_seconds': time.time() - started, 'trained_epochs': epoch, 'configured_epochs': config['epochs'],
-                   'world_size': world, 'trainer': f"train_xla.py ({os.environ.get('PJRT_DEVICE')}, bf16)"}
+                   'world_size': world,
+                   'trainer': f"train_xla.py ({os.environ.get('PJRT_DEVICE')}, {'bf16' if use_bf16 else 'fp32'})"}
         (out / 'metrics.json').write_text(json.dumps(metrics, indent=2))
         (out / 'TRAINING_COMPLETE').write_text('complete\n')
+        last_path.unlink(missing_ok=True)   # ~0.9 GB of optimizer state is not needed once training is complete
 
 
 def main():
@@ -238,6 +275,7 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--smoke', action='store_true')
     parser.add_argument('--fold', help="override config['fold'] (k-fold index; needs n_folds and select='last')")
+    parser.add_argument('--resume', action='store_true', help='continue from <output>/last.pt after a crash')
     parser.add_argument('--stop-at', type=float, default=0.0,
                         help='UNIX time by which training must end (0 = none); the epoch plan shrinks to fit')
     args = parser.parse_args()

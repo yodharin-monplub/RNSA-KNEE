@@ -1,0 +1,1 @@
+public 0.945 (submission 56670477, scored 2026-09-30 00:26) - model103 with the CoAtNet-only leg at w 0.40

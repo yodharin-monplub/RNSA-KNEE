@@ -1,0 +1,1 @@
+public 0.937 (submission 56656173, scored 2026-09-29 07:34) - model100 alone (CoAtNet-2 384, 96-frame cache, stopped at epoch 12 of 18)

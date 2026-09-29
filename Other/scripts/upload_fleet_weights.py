@@ -31,7 +31,9 @@ if args.add_model75:
 output = ROOT / f'artifacts/fleet_dataset_{args.account}'
 kept = [f.name[:-len('_best.pt')] for f in output.glob('model*_best.pt') if f.name not in FILES] if output.exists() else []
 for run in sorted(set(args.add) | set(kept)):
-    assert (ROOT / f'artifacts/remote_{run}/{run}/TRAINING_COMPLETE').is_file(), f'{run} has not finished'
+    done = ROOT / f'artifacts/remote_{run}/{run}'
+    # A run stopped early on purpose (model100: Vast credit ran out) carries TRAINING_STOPPED_EARLY instead.
+    assert (done / 'TRAINING_COMPLETE').is_file() or (done / 'TRAINING_STOPPED_EARLY').is_file(), f'{run} has not finished'
     FILES[f'{run}_best.pt'] = f'artifacts/remote_{run}/{run}/best.pt'
 output.mkdir(exist_ok=True)
 digests = {}

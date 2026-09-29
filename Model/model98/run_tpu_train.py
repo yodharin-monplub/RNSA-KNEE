@@ -29,14 +29,17 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_YODHAIRNMONPLUB', ''))
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
+# Each account has its own TPU quota (20 h/week) and its own batch TPU slot. The teammate account can attach this
+# account's private KERNELS (the dense caches) but not new private datasets, so it holds its own kit + backbone copies.
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_KRITTANUTSOMTUNG'}
 
 SESSION_LIMIT_S = 9 * 3600   # Kaggle TPU sessions stop at 9 h; outputs are only kept if the script ends by itself
 MARGIN_S = 40 * 60           # time left after training for the last save and the output upload
+SMOKE_LIMIT_S = 45 * 60      # a hung smoke run (2026-09-28: dead loader thread, 2 h of TPU burned) is killed
 
 KERNEL = r'''
-import json, os, shutil, subprocess, sys, time
+import json, os, shutil, signal, subprocess, sys, time
 from pathlib import Path
 started = time.time()
 PLAN = __PLAN__
@@ -125,16 +128,38 @@ def unpack(pilot):
     return dest
 
 
-def run_trainer(dest, out, stop_at, smoke=False, fold=None):
+def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False):
     """One train_xla.py run; True when it completed (exit code 0 and TRAINING_COMPLETE written)."""
     cmd = [sys.executable, str(ROOT / 'scripts/train_xla.py'), '--cache', str(dest), '--config', str(config_path),
            '--output', str(out), '--stop-at', str(stop_at)] + (['--smoke'] if smoke else [])
     cmd += ['--fold', str(fold)] if fold is not None else []
+    cmd += ['--resume'] if resume else []
     t0 = time.time()
-    rc = subprocess.run(cmd, env=env).returncode
+    # Own process group, so a hang can be killed with every chip process and loader worker it spawned.
+    limit = __SMOKE_LIMIT_S__ if smoke else max(600, stop_at - time.time() + 15 * 60)
+    proc = subprocess.Popen(cmd, env=env, start_new_session=True)
+    try:
+        rc = proc.wait(timeout=limit)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        proc.wait()
+        rc = -9
+        print(f'train_xla TIMED OUT after {limit:.0f}s - process group killed', flush=True)
     print('train_xla', 'smoke' if smoke else 'full', '' if fold is None else f'fold {fold}', 'exit code', rc, 'train',
           round(time.time() - t0), 's, session', round(time.time() - started), 's', flush=True)
     return rc == 0 and (out / 'TRAINING_COMPLETE').exists()
+
+
+def train_with_resume(dest, out, stop_at, fold=None):
+    """A full (or fold) run that continues from its last.pt after a crash (2026-09-29: one chip process died in epoch
+    14 of the first full TPU run), up to two times while at least 30 min remain."""
+    done = run_trainer(dest, out, stop_at, fold=fold)
+    for attempt in range(2):
+        if done or not (out / 'last.pt').exists() or stop_at - time.time() < 1800:
+            break
+        print(f'run failed; resuming from {out / "last.pt"} (attempt {attempt + 1})', flush=True)
+        done = run_trainer(dest, out, stop_at, fold=fold, resume=True)
+    return done
 
 
 ok = True
@@ -148,7 +173,7 @@ if PLAN in ('smoke', 'smoke+full', 'cpu-test', 'smoke+folds'):
         (smoke / 'best.pt').unlink(missing_ok=True)   # mechanics only: keep the logs, not 300 MB of weights
 if ok and PLAN in ('full', 'smoke+full'):
     dest = unpack(False)
-    ok = run_trainer(dest, Path('/kaggle/working') / NAME, STOP_AT)
+    ok = train_with_resume(dest, Path('/kaggle/working') / NAME, STOP_AT)
     shutil.rmtree(dest, ignore_errors=True)
 if ok and PLAN in ('folds', 'smoke+folds'):
     # k-fold: one cache unpack, folds in order; a fold starts only if the previous fold's duration still fits.
@@ -159,7 +184,7 @@ if ok and PLAN in ('folds', 'smoke+folds'):
             print(f'fold {k} not started: {STOP_AT - time.time():.0f}s left, last fold took {last:.0f}s', flush=True)
             break
         t0 = time.time()
-        fold_ok = run_trainer(dest, Path('/kaggle/working') / NAME / f'fold{k}', STOP_AT, fold=k)
+        fold_ok = train_with_resume(dest, Path('/kaggle/working') / NAME / f'fold{k}', STOP_AT, fold=k)
         last = time.time() - t0
         ok = ok and fold_ok
         if not fold_ok:
@@ -179,8 +204,11 @@ def main():
     parser.add_argument('--cache', choices=['s64', 's96'], default='s64')
     parser.add_argument('--folds', default='', help='k-fold plans: fold indices to run in this session, e.g. 0,1,2')
     parser.add_argument('--acc', default='TpuV5E8')
+    parser.add_argument('--account', default='yodharinmonplub', choices=sorted(KEYS),
+                        help='kernel owner (its own TPU quota and batch slot); caches stay yodharinmonplub kernels')
     parser.add_argument('--push', action='store_true')
     args = parser.parse_args()
+    os.environ['KAGGLE_API_TOKEN'] = os.environ[KEYS[args.account]]
     cpu = args.plan == 'cpu-test'
     folds = [int(k) for k in args.folds.split(',') if k.strip()]
     assert bool(folds) == args.plan.endswith('folds'), 'folds plans need --folds (and only they take it)'
@@ -191,7 +219,7 @@ def main():
     folder.mkdir(parents=True, exist_ok=True)
     code = (KERNEL.replace('__PLAN__', repr(args.plan)).replace('__NAME__', repr(args.name))
             .replace('__CACHE__', repr(args.cache)).replace('__FOLDS__', repr(folds))
-            .replace('__TRAIN_SECONDS__', str(SESSION_LIMIT_S - MARGIN_S)))
+            .replace('__TRAIN_SECONDS__', str(SESSION_LIMIT_S - MARGIN_S)).replace('__SMOKE_LIMIT_S__', str(SMOKE_LIMIT_S)))
     compile(code, 'tpu_kernel', 'exec')
     (folder / 'train_tpu.py').write_text(code, encoding='utf-8')
     cache = []
@@ -200,10 +228,10 @@ def main():
     if args.plan in ('full', 'smoke+full', 'folds', 'smoke+folds'):
         slug = 'rsna-knee-dense-cache-336-part{}-s96' if args.cache == 's96' else 'rsna-knee-dense-cache-part{}'
         cache += [f'yodharinmonplub/{slug.format(i)}' for i in range(4)]
-    meta = {'id': f'yodharinmonplub/rsna-knee-tpu-train-{suffix}', 'title': f'RSNA Knee TPU Train {suffix.replace("-", " ")}',
+    meta = {'id': f'{args.account}/rsna-knee-tpu-train-{suffix}', 'title': f'RSNA Knee TPU Train {suffix.replace("-", " ")}',
             'code_file': 'train_tpu.py', 'language': 'python', 'kernel_type': 'script', 'is_private': True,
             'enable_gpu': False, 'enable_tpu': not cpu, 'enable_internet': True,
-            'dataset_sources': ['yodharinmonplub/rsna-knee-trainer-kit', 'yodharinmonplub/rsna-knee-backbone-coatnet2'],
+            'dataset_sources': [f'{args.account}/rsna-knee-trainer-kit', f'{args.account}/rsna-knee-backbone-coatnet2'],
             'competition_sources': ['rsna-knee-abnormality-detection'], 'kernel_sources': cache, 'model_sources': []}
     assert len(meta['title']) <= 50, meta['title']
     (folder / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2))

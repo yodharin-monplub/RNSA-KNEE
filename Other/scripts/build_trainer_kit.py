@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 KIT = ROOT / 'artifacts/trainer_kit'
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_YODHAIRNMONPLUB', ''))
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 
 # flat name in the dataset -> path relative to the project root (Other/); model configs live in Model/<name>/config.json
@@ -33,7 +32,8 @@ LAYOUT = {
     'targets_g38f_low.csv': 'data/llm_relabel/targets_g38f_low.csv',
     'targets_v1_oof5f50.csv': 'data/llm_relabel/targets_v1_oof5f50.csv',
 }
-MODEL_CONFIGS = ['model98', 'model100']
+MODEL_CONFIGS = ['model98', 'model100', 'model104']
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_KRITTANUTSOMTUNG'}
 
 
 def build():
@@ -54,13 +54,23 @@ def build():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--push', metavar='NOTES')
+    parser.add_argument('--account', default='yodharinmonplub', choices=sorted(KEYS),
+                        help='owner of the kit dataset (the teammate account needs its own copy)')
+    parser.add_argument('--create', action='store_true', help='first upload under this account')
     args = parser.parse_args()
     layout = build()
-    print('kit files', len(layout), '->', KIT)
+    meta = json.loads((KIT / 'dataset-metadata.json').read_text())
+    meta['id'] = f'{args.account}/rsna-knee-trainer-kit'
+    (KIT / 'dataset-metadata.json').write_text(json.dumps(meta, indent=2))
+    print('kit files', len(layout), '->', KIT, '| dataset', meta['id'])
     if args.push:
+        os.environ['KAGGLE_API_TOKEN'] = os.environ[KEYS[args.account]]
         from kaggle.api.kaggle_api_extended import KaggleApi
         api = KaggleApi(); api.authenticate()
-        print(api.dataset_create_version(str(KIT.resolve()), version_notes=args.push, quiet=True))
+        if args.create:
+            print(api.dataset_create_new(str(KIT.resolve()), public=False, quiet=True))
+        else:
+            print(api.dataset_create_version(str(KIT.resolve()), version_notes=args.push, quiet=True))
 
 
 if __name__ == '__main__':
