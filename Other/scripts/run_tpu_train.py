@@ -15,7 +15,8 @@ train_xla.py. Plans:
   cpu-test    (CPU kernel, no accelerator) installs the torch/torch_xla 2.8 CPU wheels and runs the smoke plan with batch 1
               and 2 windows on PJRT_DEVICE=CPU (1 process) - catches code errors for free.
 TPU notebooks cannot be competition submissions; the trained best.pt is used from a GPU notebook (fleet leg) as usual.
-Kaggle API pushes do not get a TPU (kaggle-cli #1197): push, then start the run with "Save & Run All" in the web editor.
+API pushes (no pinned docker_image) become batch TPU sessions: they wait QUEUED until a TPU is free (minutes to
+hours), one queued-or-running batch TPU session per account.
 
 Usage: python scripts/run_tpu_train.py --name model98 --plan smoke+full [--push]
        python scripts/run_tpu_train.py --name model98 --plan cpu-test --push
@@ -32,7 +33,7 @@ load_dotenv(ROOT / '.env')
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 # Each account has its own TPU quota (20 h/week) and its own batch TPU slot. The teammate account can attach this
 # account's private KERNELS (the dense caches) but not new private datasets, so it holds its own kit + backbone copies.
-KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_KRITTANUTSOMTUNG'}
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_WARIN', 'actuarialtutor': 'KAGGLE_API_KEY_KRITTANUT'}
 
 SESSION_LIMIT_S = 9 * 3600   # Kaggle TPU sessions stop at 9 h; outputs are only kept if the script ends by itself
 MARGIN_S = 40 * 60           # time left after training for the last save and the output upload
@@ -46,6 +47,7 @@ PLAN = __PLAN__
 NAME = __NAME__
 CACHE = __CACHE__
 FOLDS = __FOLDS__
+THEN = __THEN__          # optional second model trained after the plan, same session and cache
 STOP_AT = started + __TRAIN_SECONDS__
 IN = Path('/kaggle/input')
 ROOT = Path('/kaggle/working/rsna')
@@ -118,7 +120,11 @@ def unpack(pilot):
     chosen = [m for m in manifests if {'pilot': 'pilot' in str(m), 's96': '-s96' in str(m),
                                        's64': 'pilot' not in str(m) and '-s96' not in str(m)}[geometry]]
     need = {'pilot': 8e9, 's64': 40e9, 's96': 55e9}[geometry]   # 4,407 studies unpack to ~32 GB (64 frames) / ~48 GB (96)
-    base = next((d for d in ('/kaggle/tmp', '/tmp', '/dev/shm') if space(d) > need), '/tmp')
+    # The full cache goes to RAM (/dev/shm, 164 GB) when it fits with room to spare: unpacked to /tmp, the first two
+    # epochs read at a crawl while the disk flushes (2026-09-30 model110 fold 0: 700-880 s per 100 steps in epochs 1-2,
+    # ~65 s once cached; model104 epochs 1-2 = 4,895 + 4,200 s vs 337 s later).
+    order = ('/kaggle/tmp', '/tmp', '/dev/shm') if pilot else ('/dev/shm', '/kaggle/tmp', '/tmp')
+    base = next((d for d in order if space(d) > need * (1.5 if d == '/dev/shm' else 1)), '/tmp')
     dest = Path(base) / ('dense_pilot' if pilot else 'dense')
     t0 = time.time()
     print('cache', [str(m) for m in chosen], '->', dest, f'free {space(base) / 1e9:.0f} GB', flush=True)
@@ -128,12 +134,14 @@ def unpack(pilot):
     return dest
 
 
-def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False):
+def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False, config=None):
     """One train_xla.py run; True when it completed (exit code 0 and TRAINING_COMPLETE written)."""
-    cmd = [sys.executable, str(ROOT / 'scripts/train_xla.py'), '--cache', str(dest), '--config', str(config_path),
+    cmd = [sys.executable, str(ROOT / 'scripts/train_xla.py'), '--cache', str(dest), '--config', str(config or config_path),
            '--output', str(out), '--stop-at', str(stop_at)] + (['--smoke'] if smoke else [])
     cmd += ['--fold', str(fold)] if fold is not None else []
     cmd += ['--resume'] if resume else []
+    if not smoke:   # fresh processes every 7 epochs (see train_xla.py) with a shared compilation cache
+        cmd += ['--epochs-per-process', '7', '--xla-cache', '/tmp/xla_cache']
     t0 = time.time()
     # Own process group, so a hang can be killed with every chip process and loader worker it spawned.
     limit = __SMOKE_LIMIT_S__ if smoke else max(600, stop_at - time.time() + 15 * 60)
@@ -150,49 +158,90 @@ def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False):
     return rc == 0 and (out / 'TRAINING_COMPLETE').exists()
 
 
-def train_with_resume(dest, out, stop_at, fold=None):
-    """A full (or fold) run that continues from its last.pt after a crash (2026-09-29: one chip process died in epoch
-    14 of the first full TPU run), up to two times while at least 30 min remain."""
-    done = run_trainer(dest, out, stop_at, fold=fold)
-    for attempt in range(2):
-        if done or not (out / 'last.pt').exists() or stop_at - time.time() < 1800:
-            break
-        print(f'run failed; resuming from {out / "last.pt"} (attempt {attempt + 1})', flush=True)
-        done = run_trainer(dest, out, stop_at, fold=fold, resume=True)
-    return done
+def train_with_resume(dest, out, stop_at, fold=None, config=None):
+    """A full (or fold) run in several processes: train_xla.py leaves a RELAUNCH marker every 7 epochs (planned
+    restart) and is resumed from last.pt; after a crash (2026-09-29: a chip process died in epoch 14) it is resumed up
+    to two times while at least 30 min remain."""
+    resume, crashes = False, 0
+    while True:
+        (out / 'RELAUNCH').unlink(missing_ok=True)
+        if run_trainer(dest, out, stop_at, fold=fold, resume=resume, config=config):
+            return True
+        resume = True
+        if (out / 'RELAUNCH').exists() and stop_at - time.time() > 900:
+            print('planned process relaunch from', out / 'last.pt', flush=True)
+            continue
+        crashes += 1
+        if crashes > 2 or not (out / 'last.pt').exists() or stop_at - time.time() < 1800:
+            return False
+        print(f'run failed; resuming from {out / "last.pt"} (retry {crashes})', flush=True)
 
 
-ok = True
+def steady_need(run_dir, observed):
+    """Seconds one more full run of this recipe needs in THIS session, where the page cache and the XLA cache are warm:
+    the finished run's median epoch time after its first two epochs x the configured epochs, + 1.5 epochs per process
+    start/relaunch, + 10 min. The first run of a session is a bad guide - 2026-09-30 model110 fold 0 epoch 1 took
+    5,594 s (cold 96-frame cache + compile) against ~337 s per epoch later. Falls back to the observed duration."""
+    try:
+        hist = json.loads((run_dir / 'history.json').read_text())
+        secs = sorted(float(h['epoch_seconds']) for h in hist if int(h.get('epoch', 0)) > 2)
+        epochs = int(json.loads(config_path.read_text())['epochs'])
+        if len(secs) >= 3:
+            steady = secs[len(secs) // 2]
+            need = steady * epochs + 1.5 * steady * (1 + epochs // 7) + 600
+            print(f'steady epoch {steady:.0f}s -> next full run needs ~{need:.0f}s (observed {observed:.0f}s)', flush=True)
+            return need
+    except Exception as exc:
+        print('steady estimate unavailable:', type(exc).__name__, str(exc)[:120], flush=True)
+    return observed
+
+
+ok, dest, last = True, None, None
 if PLAN in ('smoke', 'smoke+full', 'cpu-test', 'smoke+folds'):
-    dest = unpack(True)
+    pilot_dir = unpack(True)
     smoke = Path('/kaggle/working') / (NAME + '_smoke')
-    ok = run_trainer(dest, smoke, min(STOP_AT, time.time() + 3 * 3600), smoke=True, fold=FOLDS[0] if FOLDS else None)
-    shutil.rmtree(dest, ignore_errors=True)   # never ship cache pixels as notebook output
+    ok = run_trainer(pilot_dir, smoke, min(STOP_AT, time.time() + 3 * 3600), smoke=True, fold=FOLDS[0] if FOLDS else None)
+    shutil.rmtree(pilot_dir, ignore_errors=True)   # never ship cache pixels as notebook output
     if ok:
         print('smoke history', (smoke / 'history.json').read_text(), flush=True)
         (smoke / 'best.pt').unlink(missing_ok=True)   # mechanics only: keep the logs, not 300 MB of weights
 if ok and PLAN in ('full', 'smoke+full'):
     dest = unpack(False)
+    t0 = time.time()
     ok = train_with_resume(dest, Path('/kaggle/working') / NAME, STOP_AT)
-    shutil.rmtree(dest, ignore_errors=True)
+    last = steady_need(Path('/kaggle/working') / NAME, time.time() - t0)
 if ok and PLAN in ('folds', 'smoke+folds'):
-    # k-fold: one cache unpack, folds in order; a fold starts only if the previous fold's duration still fits.
+    # k-fold: one cache unpack, folds in order; a fold starts only if a full fold (steady-state estimate) still fits.
     dest = unpack(False)
-    last = None
     for k in FOLDS:
-        if last is not None and STOP_AT - time.time() < last * 1.1:
-            print(f'fold {k} not started: {STOP_AT - time.time():.0f}s left, last fold took {last:.0f}s', flush=True)
+        if last is not None and STOP_AT - time.time() < last * 1.05:
+            print(f'fold {k} not started: {STOP_AT - time.time():.0f}s left, a fold needs ~{last:.0f}s', flush=True)
+            last = float('inf')   # no time for THEN either
             break
         t0 = time.time()
-        fold_ok = train_with_resume(dest, Path('/kaggle/working') / NAME / f'fold{k}', STOP_AT, fold=k)
-        last = time.time() - t0
+        run_dir = Path('/kaggle/working') / NAME / f'fold{k}'
+        fold_ok = train_with_resume(dest, run_dir, STOP_AT, fold=k)
+        last = steady_need(run_dir, time.time() - t0)
         ok = ok and fold_ok
         if not fold_ok:
             break
+if ok and THEN and dest is not None:
+    # Second model on the same cache (e.g. a full-data run after two folds). It needs about THEN_RATIO x the last run
+    # (full data = 1.25 x a fold's training set); start it only if that fits, so it can keep its full epoch plan.
+    need, left = last * __THEN_RATIO__, STOP_AT - time.time()
+    if left < need * 1.05:
+        print(f'{THEN} not started: {left:.0f}s left, needs ~{need:.0f}s', flush=True)
+    else:
+        print(f'{THEN} starting: {left:.0f}s left, needs ~{need:.0f}s', flush=True)
+        ok = train_with_resume(dest, Path('/kaggle/working') / THEN, STOP_AT, config=ROOT / THEN / 'config.json') and ok
+if dest is not None:
     shutil.rmtree(dest, ignore_errors=True)
 shutil.rmtree(ROOT, ignore_errors=True)           # the kit copy and backbone weights are inputs, not outputs
 print('PLAN', PLAN, 'OK' if ok else 'FAILED', 'session', round(time.time() - started), 's', flush=True)
-sys.exit(0 if ok else 1)
+# Always exit 0: Kaggle keeps no output files of a failed run, and a later fold failing must not take the finished
+# folds with it. The outcome is in the log line above and in PLAN_STATUS.txt.
+Path('/kaggle/working/PLAN_STATUS.txt').write_text(('OK' if ok else 'FAILED') + '\n')
+sys.exit(0)
 '''
 
 
@@ -204,6 +253,9 @@ def main():
     parser.add_argument('--cache', choices=['s64', 's96'], default='s64')
     parser.add_argument('--folds', default='', help='k-fold plans: fold indices to run in this session, e.g. 0,1,2')
     parser.add_argument('--acc', default='TpuV5E8')
+    parser.add_argument('--then', default='', help='second model config (same cache) trained after the plan if time allows')
+    parser.add_argument('--then-ratio', type=float, default=1.25,
+                        help='expected duration of --then relative to the last fold/full run (full data vs a fold: 1.25)')
     parser.add_argument('--account', default='yodharinmonplub', choices=sorted(KEYS),
                         help='kernel owner (its own TPU quota and batch slot); caches stay yodharinmonplub kernels')
     parser.add_argument('--push', action='store_true')
@@ -215,10 +267,14 @@ def main():
     suffix = {'smoke': f'{args.name}-smoke', 'cpu-test': f'{args.name}-cpu-test'}.get(args.plan, args.name)
     if folds:
         suffix += '-f' + ''.join(str(k) for k in folds)   # one kernel per fold set, e.g. model101-f012
+    if args.then:
+        assert args.plan in ('full', 'smoke+full', 'folds', 'smoke+folds'), '--then needs a full or folds plan'
+        suffix += '-then-' + args.then
     folder = ROOT / f'artifacts/tpu_{suffix.replace("-", "_")}_notebook'
     folder.mkdir(parents=True, exist_ok=True)
     code = (KERNEL.replace('__PLAN__', repr(args.plan)).replace('__NAME__', repr(args.name))
             .replace('__CACHE__', repr(args.cache)).replace('__FOLDS__', repr(folds))
+            .replace('__THEN__', repr(args.then or None)).replace('__THEN_RATIO__', repr(args.then_ratio))
             .replace('__TRAIN_SECONDS__', str(SESSION_LIMIT_S - MARGIN_S)).replace('__SMOKE_LIMIT_S__', str(SMOKE_LIMIT_S)))
     compile(code, 'tpu_kernel', 'exec')
     (folder / 'train_tpu.py').write_text(code, encoding='utf-8')

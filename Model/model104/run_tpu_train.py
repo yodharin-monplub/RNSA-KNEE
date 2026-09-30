@@ -32,7 +32,7 @@ load_dotenv(ROOT / '.env')
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 # Each account has its own TPU quota (20 h/week) and its own batch TPU slot. The teammate account can attach this
 # account's private KERNELS (the dense caches) but not new private datasets, so it holds its own kit + backbone copies.
-KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_KRITTANUTSOMTUNG'}
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_WARIN', 'actuarialtutor': 'KAGGLE_API_KEY_KRITTANUT'}
 
 SESSION_LIMIT_S = 9 * 3600   # Kaggle TPU sessions stop at 9 h; outputs are only kept if the script ends by itself
 MARGIN_S = 40 * 60           # time left after training for the last save and the output upload

@@ -19,6 +19,7 @@ Usage (in a Kaggle TPU notebook, cache/targets/partitions attached):
 """
 import argparse
 import contextlib
+import gc
 import json
 import os
 import sys
@@ -62,6 +63,13 @@ def run(index, args):
 
     config = json.loads(Path(args.config).read_text())
     max_eval = DenseCache(args.cache).frames - 2   # every window center: 62 for the 64-frame cache, 94 for 96 frames
+    if args.xla_cache:
+        # Persistent compilation cache: a relaunched process (--resume) reuses the compiled graphs instead of spending
+        # ~20 min recompiling. Must run before any XLA computation; only local chip 0 writes.
+        try:
+            xr.initialize_cache(args.xla_cache, readonly=index != 0)
+        except Exception as exc:
+            print('xla cache not enabled:', type(exc).__name__, str(exc)[:120], flush=True)
     device = xm.xla_device()
     world, rank = xr.world_size(), xr.global_ordinal()
     torch.manual_seed(config['seed'] + rank); np.random.seed(config['seed'] + rank)
@@ -172,10 +180,12 @@ def run(index, args):
         p_all, r_all = p_all.cpu().numpy(), r_all.cpu().numpy()
         full = np.zeros((len(data), len(LABELS)), np.float32)
         full[r_all] = p_all                       # DistributedSampler pads by repeating; duplicates overwrite equally
+        del dl, preds, rows, p, r, p_all, r_all
+        gc.collect()
         return full, data.targets
 
     history, best, started = [], float('inf'), time.time()
-    epoch = 0
+    epoch, epochs_here = 0, 0
     last_path = out / 'last.pt'   # full training state after every epoch, so a crashed run can continue (--resume)
     if args.resume and last_path.exists():
         ck = torch.load(last_path, map_location='cpu', weights_only=False)
@@ -191,7 +201,8 @@ def run(index, args):
         epoch_started = time.time()
         sampler.set_epoch(epoch)
         model.train()
-        for step, (images, target) in enumerate(pl.MpDeviceLoader(loader, device)):
+        train_dl = pl.MpDeviceLoader(loader, device)
+        for step, (images, target) in enumerate(train_dl):
             optimizer.zero_grad(set_to_none=True)
             with amp():
                 b, k = images.shape[:2]
@@ -207,8 +218,14 @@ def run(index, args):
                 print(json.dumps({'epoch': epoch, 'step': step, 'loss': float(loss.detach().cpu())}), flush=True)
             if args.smoke and step >= 2:
                 break
+        del train_dl
+        gc.collect()
         pv, tv = evaluate(*val_eval)
-        val_bce = float(np.mean(-(tv * np.log(np.clip(pv, 1e-6, 1)) + (1 - tv) * np.log(np.clip(1 - pv, 1e-6, 1)))))
+        # train_model16's weak-val BCE: each soft target weighted by its confidence 2|t - 0.5| (the plain mean used before
+        # 2026-09-30 counted near-0.5 labels fully and read ~0.06 higher than the GPU runs for the same quality).
+        conf = 2 * np.abs(tv - .5)
+        bce = -(tv * np.log(np.clip(pv, 1e-6, 1)) + (1 - tv) * np.log(np.clip(1 - pv, 1e-6, 1)))
+        val_bce = float((bce * conf).sum() / max(float(conf.sum()), 1e-9))
         pg, tg = evaluate(*gold_eval)
         gold_auc = float(roc_auc_score(tg, pg)) if not args.smoke else None
         # Epoch plan for the time limit: every chip proposes how many epochs fit before --stop-at (from this epoch's
@@ -230,9 +247,20 @@ def run(index, args):
             host_free = round(psutil.virtual_memory().available / 1e9, 1)
         except Exception:
             host_free = None
+        # Diagnostics for the epoch-14 slowdown / crash of the first TPU runs: XLA compilations so far and device memory.
+        try:
+            import torch_xla.debug.metrics as met
+            compile_data = met.metric_data('CompileTime')
+            compiles = int(compile_data[0]) if compile_data else 0
+        except Exception:
+            compiles = None
+        try:
+            hbm = {k: round(v / 1e9, 2) for k, v in xm.get_memory_info(device).items() if isinstance(v, (int, float))}
+        except Exception:
+            hbm = None
         history.append({'epoch': epoch, 'weak_val_bce': val_bce, 'gold_auc_descriptive': gold_auc,
                         'elapsed_seconds': time.time() - started, 'epoch_seconds': seconds, 'plan_epochs': plan_epochs,
-                        'host_free_gb': host_free})
+                        'host_free_gb': host_free, 'xla_compiles': compiles, 'device_memory_gb': hbm})
         if rank == 0:
             print(json.dumps(history[-1]), flush=True)
             (out / 'history.json').write_text(json.dumps(history, indent=2))
@@ -253,6 +281,18 @@ def run(index, args):
                         'scheduler': scheduler.state_dict(), 'history': history, 'best': best, 'epoch': epoch,
                         'plan_epochs': plan_epochs}, out / 'last.tmp')
             os.replace(out / 'last.tmp', last_path)
+        epochs_here += 1
+        if args.epochs_per_process and epochs_here >= args.epochs_per_process and epoch < plan_epochs:
+            # Fresh processes every few epochs: the first TPU runs degraded after ~1.5 h in the same processes (host
+            # memory -42 GB and ~15x slower epochs from epoch 14; the bf16 run crashed there). Rank 0 leaves a RELAUNCH
+            # marker next to last.pt and every chip returns; the kernel relaunches with --resume. All chips reach this
+            # point at the same epoch.
+            xm.rendezvous(f'relaunch{epoch}')
+            if rank == 0:
+                (out / 'RELAUNCH').write_text(f'after epoch {epoch}\n')
+                print(f'leaving after epoch {epoch} for a process relaunch (--epochs-per-process {args.epochs_per_process})',
+                      flush=True)
+            return
         if os.environ.get('XLA_TEST_CRASH_AFTER_EPOCH') == str(epoch) and not args.resume:
             raise SystemExit(f'test crash after epoch {epoch}')   # local test of --resume only
         xm.rendezvous(f'epoch{epoch}')
@@ -266,6 +306,7 @@ def run(index, args):
         (out / 'metrics.json').write_text(json.dumps(metrics, indent=2))
         (out / 'TRAINING_COMPLETE').write_text('complete\n')
         last_path.unlink(missing_ok=True)   # ~0.9 GB of optimizer state is not needed once training is complete
+        (out / 'RELAUNCH').unlink(missing_ok=True)
 
 
 def main():
@@ -276,6 +317,9 @@ def main():
     parser.add_argument('--smoke', action='store_true')
     parser.add_argument('--fold', help="override config['fold'] (k-fold index; needs n_folds and select='last')")
     parser.add_argument('--resume', action='store_true', help='continue from <output>/last.pt after a crash')
+    parser.add_argument('--epochs-per-process', type=int, default=0,
+                        help='exit with code 3 after this many epochs in one process (the caller relaunches with --resume)')
+    parser.add_argument('--xla-cache', default='', help='persistent XLA compilation cache folder (reused across relaunches)')
     parser.add_argument('--stop-at', type=float, default=0.0,
                         help='UNIX time by which training must end (0 = none); the epoch plan shrinks to fit')
     args = parser.parse_args()

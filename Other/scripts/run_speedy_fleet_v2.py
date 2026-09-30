@@ -15,19 +15,26 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_model76 as base
 from fleet_leg_v2 import FLEET_LEG_V2
+from fleet_leg_v3 import FLEET_LEG_V3
+from fleet_leg_v4 import FLEET_LEG_V4
 
 FLEET_SRC = """_M80_FLEET = [('model72', ['model72_best.pt'], 's64'),
               ('model71', [f'model71_fold{k}_best.pt' for k in range(5)], 's64'),
               ('model73', ['model73_best.pt'], 's64')]"""
 
 
-def build(name, title, weight, fleet):
+def build(name, title, weight, fleet, leg_version='v2'):
     members = ast.literal_eval(fleet)
-    assert all(g in ('s64', 's96', 's128') and all(f.endswith('.pt') for f in files) for _, files, g in members)
+    # (member, files, geometry) or, with --leg v4, (member, files, geometry, window stride)
+    assert all(m[2] in ('s64', 's96', 's128') and all(f.endswith('.pt') for f in m[1]) and len(m) in (3, 4)
+               for m in members)
+    assert leg_version == 'v4' or all(len(m) == 3 for m in members), 'window strides need --leg v4'
     folder76, meta76 = base.build()
     nb = json.loads((folder76 / 'notebook.ipynb').read_text(encoding='utf-8'))
     assert "print(f'COMPLETE: {_final}" in ''.join(nb['cells'][-1]['source'])
-    leg = FLEET_LEG_V2.lstrip('\n')
+    # v3 (2026-09-30): one-pass reader + priority-based member dropping under the time guard; the fleet order is the
+    # priority (first = kept longest). v2 stays the default so earlier models rebuild exactly.
+    leg = {'v2': FLEET_LEG_V2, 'v3': FLEET_LEG_V3, 'v4': FLEET_LEG_V4}[leg_version].lstrip('\n')
     assert leg.count('_M80_W = 0.30\n') == 1 and leg.count(FLEET_SRC) == 1
     leg = leg.replace('_M80_W = 0.30\n', f'_M80_W = {weight:.2f}\n').replace(FLEET_SRC, '_M80_FLEET = ' + repr(members))
     compile(leg, 'leg', 'exec')
@@ -42,7 +49,7 @@ def build(name, title, weight, fleet):
         target.mkdir(parents=True, exist_ok=True)
         (target / 'notebook.ipynb').write_text(json.dumps(nb, indent=1), encoding='utf-8')
         (target / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2))
-    for script in ('run_model76.py', 'run_speedy_fleet_v2.py', 'fleet_leg_v2.py'):
+    for script in ('run_model76.py', 'run_speedy_fleet_v2.py', 'fleet_leg_v2.py', 'fleet_leg_v3.py', 'fleet_leg_v4.py'):
         shutil.copy2(Path(__file__).resolve().parent / script, model_dir / script)
     for cell in nb['cells']:
         if cell['cell_type'] == 'code':
@@ -58,10 +65,12 @@ def main():
     parser.add_argument('--title', required=True)
     parser.add_argument('--weight', type=float, default=0.30)
     parser.add_argument('--fleet', required=True)
+    parser.add_argument('--leg', choices=['v2', 'v3', 'v4'], default='v2',
+                        help='fleet leg version (v3: one-pass reader; drops the last members on a time shortfall)')
     parser.add_argument('--push', action='store_true')
     args = parser.parse_args()
     assert len(args.title) <= 50, 'Kaggle caps titles at 50 characters'
-    folder, meta = build(args.name, args.title, args.weight, args.fleet)
+    folder, meta = build(args.name, args.title, args.weight, args.fleet, args.leg)
     print('built', folder, '| kernel', meta['id'])
     if args.push:
         from kaggle.api.kaggle_api_extended import KaggleApi

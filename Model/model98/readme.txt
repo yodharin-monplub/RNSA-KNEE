@@ -56,4 +56,14 @@ History:
                     Fixes (2026-09-29 evening): fp32 by default (config xla_bf16 restores bf16), per-epoch last.pt +
                     --resume (the kernel resumes a crashed run up to twice), eval loader workers not resident, host
                     free-memory logging per epoch. Epoch-13 weights kept in Other/artifacts/remote_model98 (not used).
-Score: pending.
+  2026-09-30 05:06-12:40  v3 (fp32, resume-capable) COMPLETED: 17 epochs (plan shrank 18 -> 17 for the time limit),
+                    selected epoch 16 (plain weak-val BCE 0.3700), gold AUC 0.9154 (epoch 13 had 0.9207); best.pt sha256
+                    378563bb45129968a15e075ea5fdaccd3d163608b56781367d896fb50367353d, added to rsna-knee-fleet-weights.
+                    Epochs 1-13 took ~305 s each (fp32 as fast as bf16), but epochs 14-17 took 4,500-6,800 s each and
+                    free host memory fell 137 -> 94 GB at epoch 14 (the bf16 run crashed at the same epoch) - cause
+                    unknown yet; per-epoch XLA compile counts and device memory are now logged.
+                    METRIC MISMATCH found: train_model16 reports a CONFIDENCE-WEIGHTED weak-val BCE (weights 2|t-0.5|),
+                    train_xla used a plain mean, which reads ~0.06 higher for the same quality - the "quality gap" to
+                    the GPU runs was this, not bf16. Gold AUC (comparable) is on par with model75 (0.92). train_xla now
+                    uses the weighted formula.
+Score: pending (LB test planned after the Kaggle GPU quota refresh on 2026-10-03).

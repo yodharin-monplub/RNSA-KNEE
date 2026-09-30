@@ -9,4 +9,6 @@ Built with Other/scripts/run_speedy_fleet_v2.py --name model106 --weight 0.30 --
   "[('model75', ['model75_best.pt'], 's64'), ('model100', ['model100_best.pt'], 's96'), ('model79', ['model79_best.pt'], 's64')]".
 Weights: model79_best.pt added to yodharinmonplub/rsna-knee-fleet-weights (2026-09-29).
 Dummy run VERIFIED 2026-09-29 16:32 (3 CoAtNet-2 384 checkpoints, 3/3 studies, no errors). Submit after the 07:00 reset.
-Score: pending.
+SUBMITTED 2026-09-30 07:02 (+07), submission 56690928.
+Score: public 0.946 (scored 2026-09-30 13:57) vs model103 (same leg without model79) 0.947 -> model79 hurts the leg: it shares
+its initialisation with the Raptor maxspan arm already in Speedy, so it adds little new and dilutes. Dropped from the leg.

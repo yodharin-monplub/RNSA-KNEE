@@ -32,7 +32,7 @@ load_dotenv(ROOT / '.env')
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 # Each account has its own TPU quota (20 h/week) and its own batch TPU slot. The teammate account can attach this
 # account's private KERNELS (the dense caches) but not new private datasets, so it holds its own kit + backbone copies.
-KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_KRITTANUTSOMTUNG'}
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_WARIN', 'actuarialtutor': 'KAGGLE_API_KEY_KRITTANUT'}
 
 SESSION_LIMIT_S = 9 * 3600   # Kaggle TPU sessions stop at 9 h; outputs are only kept if the script ends by itself
 MARGIN_S = 40 * 60           # time left after training for the last save and the output upload
@@ -134,6 +134,8 @@ def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False):
            '--output', str(out), '--stop-at', str(stop_at)] + (['--smoke'] if smoke else [])
     cmd += ['--fold', str(fold)] if fold is not None else []
     cmd += ['--resume'] if resume else []
+    if not smoke:   # fresh processes every 7 epochs (see train_xla.py) with a shared compilation cache
+        cmd += ['--epochs-per-process', '7', '--xla-cache', '/tmp/xla_cache']
     t0 = time.time()
     # Own process group, so a hang can be killed with every chip process and loader worker it spawned.
     limit = __SMOKE_LIMIT_S__ if smoke else max(600, stop_at - time.time() + 15 * 60)
@@ -151,15 +153,22 @@ def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False):
 
 
 def train_with_resume(dest, out, stop_at, fold=None):
-    """A full (or fold) run that continues from its last.pt after a crash (2026-09-29: one chip process died in epoch
-    14 of the first full TPU run), up to two times while at least 30 min remain."""
-    done = run_trainer(dest, out, stop_at, fold=fold)
-    for attempt in range(2):
-        if done or not (out / 'last.pt').exists() or stop_at - time.time() < 1800:
-            break
-        print(f'run failed; resuming from {out / "last.pt"} (attempt {attempt + 1})', flush=True)
-        done = run_trainer(dest, out, stop_at, fold=fold, resume=True)
-    return done
+    """A full (or fold) run in several processes: train_xla.py leaves a RELAUNCH marker every 7 epochs (planned
+    restart) and is resumed from last.pt; after a crash (2026-09-29: a chip process died in epoch 14) it is resumed up
+    to two times while at least 30 min remain."""
+    resume, crashes = False, 0
+    while True:
+        (out / 'RELAUNCH').unlink(missing_ok=True)
+        if run_trainer(dest, out, stop_at, fold=fold, resume=resume):
+            return True
+        resume = True
+        if (out / 'RELAUNCH').exists() and stop_at - time.time() > 900:
+            print('planned process relaunch from', out / 'last.pt', flush=True)
+            continue
+        crashes += 1
+        if crashes > 2 or not (out / 'last.pt').exists() or stop_at - time.time() < 1800:
+            return False
+        print(f'run failed; resuming from {out / "last.pt"} (retry {crashes})', flush=True)
 
 
 ok = True

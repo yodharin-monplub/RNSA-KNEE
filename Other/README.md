@@ -1,10 +1,12 @@
 # RSNA Knee Abnormality Detection
 
-## Current status (2026-09-29)
+## Current status (2026-09-30)
 
-Best public AUC **0.947** (model103), rank ~113 of 4,540 at that score on 2026-09-29 (gold line 0.956, rank 100 = 0.948,
-silver = top 5% = 0.944, bronze = top 10% = 0.943; 775 teams sit at >= 0.943, mostly copies of public notebooks).
-Competition deadline: 2026-10-22.
+Best public AUC **0.947** (model103), rank 114 of 4,642 on 2026-09-30 (gold line = rank 19 = 0.956, silver = top 5% =
+rank 232 = 0.944, bronze = top 10% = 0.943; top 0.961). Competition deadline: 2026-10-22.
+Kaggle keys in Other/.env are named after the owners' e-mail names (never rename them): KAGGLE_API_KEY_YODHAIRNMONPLUB =
+yodharinmonplub (SUBMISSIONS ONLY, per AGENTS.md), KAGGLE_API_KEY_WARIN = krittanutsomtuas (training on its free TPU),
+KAGGLE_API_KEY_KRITTANUT = actuarialtutor (new; GPU works, TPU via API not yet, not joined to the competition yet).
 model103 = model76 (the public "Speedy Raptors" notebook, 0.943, with its four Raptor CoAtNet views switched to this
 project's own weights - model61) + a final rank-blend leg (w 0.30) over ONLY our two CoAtNet-2 384 px models (model75
 on the 64-frame cache, model100 on the 96-frame cache).
@@ -19,8 +21,14 @@ on the 64-frame cache, model100 on the 96-frame cache).
 | model78 | model76 + fleet4 leg (model72, model71 x5, model73, model75) at w 0.30 | 0.946 |
 | model93 / model94 | model76 + model75 as a fifth Raptor view / + the fleet4 leg as well | 0.946 / 0.946 |
 | model95 | model78 at leg weight 0.40 | 0.945 |
-| model99 / model102 | model78 + model86 (dense EfficientNet) / + model86 and model100 | 0.945 / 0.945 |
+| model99 / model102 | model78 + model86 (dense EfficientNet) / + model86 and model100 (possibly leg TIMEOUTS, see below) | 0.945 / 0.945 |
 | model103 | model76 + leg over ONLY model75 + model100 (both CoAtNet-2 384) at w 0.30 | **0.947** |
+| model105 / model106 | model103 at w 0.40 / model103 leg + model79 (Raptor-init CoAtNet) | 0.945 / 0.946 |
+
+Leg time budget: the leg runs after Speedy (~7.2-7.4 h into the hidden run) and must end by notebook age 8.5 h, so it
+has ~40-70 min; fleet_leg_v2 is all-or-nothing (a projected overrun silently keeps Speedy's file = model76's 0.945).
+fleet_leg_v3 (2026-09-30) reads each DICOM once for all geometries and drops the LAST members of the fleet list first
+on an overrun (run_speedy_fleet_v2.py --leg v3; the fleet order is the priority).
 
 ### Final submission guidance
 
@@ -29,12 +37,16 @@ Pick **model103** (0.947) and, as the hedge, **model94** (0.946: model75 as a fi
 (most metals are copies of two public notebooks), prefer the candidate that leans more on our own models. Any later
 CoAtNet-2 384 model (model98 / model104 on the TPU) joins the model103 leg, never the small-model fleet.
 
-### In progress (2026-09-29)
+### In progress (2026-09-30)
 
-- model105 = model103 with the leg at w 0.40 (dummy run, submit today).
-- model98 (second CoAtNet-2 384 seed, 64 frames) and model104 (model100's recipe fully trained, 96 frames) queued on
-  free Kaggle TPU v5e-8 sessions of the two team accounts (Other/scripts/train_xla.py, run_tpu_train.py); launch and
-  data-loader bugs fixed (see EXPERIMENTS.md), hang guard in place.
+- Kaggle GPU quota (needed for every submission's dummy run) is used up on both team accounts until 2026-10-03 07:00
+  (+07). Armed for then: model108 (model104 alone), model107 (leg model75 + model100 + model104), model111 (+ model98);
+  then per-group readouts model114-119 (scripts/make_group_readout.py).
+- TPU lane (krittanutsomtuas): model110 = 5-fold CoAtNet-2 384 s96 (OOF teacher), session 1 = folds 0-2 queued; session
+  2 = folds 3-4 + model112 (FULL-DATA CoAtNet-2 384, train_xla.py full_data) chained by scratch tpu_chain.py; then
+  model113 = pseudo-label student (scripts/make_pseudo_targets.py: 0.5 labels + 0.5 model110 OOF) - the forum's lever.
+- model104 (TPU, gold 0.9306) and model98 (TPU, gold 0.9154) finished; model109 (third seed) was queued on the main
+  account before the submit-only rule and started on 2026-09-30 19:50 despite a cancel - the user was asked to stop it.
 - Vast credit 0.25 USD: no Vast training until a top-up.
 
 ### What moved the score

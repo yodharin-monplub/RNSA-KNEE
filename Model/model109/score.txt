@@ -1,0 +1,1 @@
+gold AUC 0.9126 (58 gold studies, epoch 18; descriptive only). No public LB score (not submitted).

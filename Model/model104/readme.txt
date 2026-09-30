@@ -15,4 +15,11 @@ Pushed 2026-09-29 07:42 as krittanutsomtuas/rsna-knee-tpu-train-model104 (batch 
 Hang guard: the smoke run is killed after 45 min, the full run 15 min after its --stop-at deadline.
 2026-09-29 18:36: v2 pushed with the fixed trainer (fp32 instead of bf16 - the first full TPU run of model98 learned worse in
 bf16 -, per-epoch last.pt + automatic resume after a crash, non-resident eval workers); replaces the queued v1.
-Score: pending.
+RESULT (v2, 2026-09-30 05:10-13:25 on the teammate TPU, fp32): smoke OK; the 48 GB 96-frame cache unpacked in 664 s;
+epochs 1-2 took 4,895 s and 4,200 s (cold page cache - the first passes read the cache from disk), epochs 3-13 ~336 s,
+then epochs 14-15 took 5,832 s and 9,304 s (the same epoch-14 slowdown as model98, host free memory 144 -> 103 GB), so
+the time guard cut the plan to 15 epochs. Selected epoch 15 (plain weak-val BCE 0.3647): GOLD AUC 0.9306 - the best of
+any model this project has trained (model75 0.9204, model100 0.9231, model79 0.9242). best.pt sha256
+4d2670fccd7c5f8e6aa081c71ecb25ed7d4ea1b9df35f30df14099debf88d67c, added to yodharinmonplub/rsna-knee-fleet-weights.
+(v1, bf16, ran 22:30-04:30 on 2026-09-29/30 and produced no output - probably preempted.)
+Score: pending (LB tests after the Kaggle GPU quota refresh on 2026-10-03).

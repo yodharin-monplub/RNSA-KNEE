@@ -32,8 +32,8 @@ LAYOUT = {
     'targets_g38f_low.csv': 'data/llm_relabel/targets_g38f_low.csv',
     'targets_v1_oof5f50.csv': 'data/llm_relabel/targets_v1_oof5f50.csv',
 }
-MODEL_CONFIGS = ['model98', 'model100', 'model104']
-KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_KRITTANUTSOMTUNG'}
+MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109']
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_WARIN', 'actuarialtutor': 'KAGGLE_API_KEY_KRITTANUT'}
 
 
 def build():
