@@ -9,4 +9,9 @@ Runs on the teammate account's TPU (krittanutsomtuas; own 20 h/week quota): sess
 (krittanutsomtuas/rsna-knee-tpu-train-model110-f012, pushed 2026-09-30 13:34), session 2 = folds 3,4.
 Files: config.json, train_xla.py, xla_data.py, tpu_common.py, run_tpu_train.py (--name model110 --plan smoke+folds
 --folds 0,1,2 --cache s96 --account krittanutsomtuas), build_trainer_kit.py, collect_tpu_run.py.
-Score: pending.
+SESSION 1 RESULT (2026-10-01 05:05): only fold 0 finished (cold /tmp cache slowed epochs 1-2, a late slowdown in
+process 3 cut it to 16 epochs; the old kernel rule then skipped folds 1-2). Fold 0: gold AUC 0.9343 at epoch 16
+(0.9363 at epoch 15) - best single model so far; OOF for 832 studies; fleet weights model110_fold0_best.pt
+(sha256 b837d3c7...). Folds 1-4 (+ model112): next session, after the teammate TPU quota refresh (Sat 07:00),
+kernel model110-f1234-then-model112 (cache in /dev/shm, steady-state fold estimate) pushed by scratch tpu_chain2.py.
+Score: fold 0 gold 0.9343 (see score.txt).

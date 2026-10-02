@@ -255,6 +255,30 @@ def run(index, args):
             host_free = round(psutil.virtual_memory().available / 1e9, 1)
         except Exception:
             host_free = None
+        # Host memory breakdown (2026-10-01: MemAvailable fell 201 -> 114 GB across process relaunches in model110
+        # fold 0 and the epochs crawled once it was low): shared memory, page cache, and the largest processes.
+        mem = None
+        if rank == 0:
+            try:
+                import shutil as _shutil
+                import psutil
+                vm = psutil.virtual_memory()
+                procs = []
+                for p in psutil.process_iter(['pid', 'name', 'memory_info']):
+                    rss = p.info['memory_info'].rss if p.info.get('memory_info') else 0
+                    procs.append((rss, p.info['pid'], p.info['name']))
+                procs.sort(reverse=True)
+                try:
+                    shm = round(_shutil.disk_usage('/dev/shm').used / 1e9, 1)
+                except OSError:
+                    shm = None    # no /dev/shm (local Windows test)
+                mem = {'shm_used_gb': shm,
+                       'cached_gb': round(getattr(vm, 'cached', 0) / 1e9, 1), 'shared_gb': round(getattr(vm, 'shared', 0) / 1e9, 1),
+                       'python_rss_gb': round(sum(r for r, _, n in procs if 'python' in (n or '')) / 1e9, 1),
+                       'n_python': sum(1 for _, _, n in procs if 'python' in (n or '')),
+                       'top': [(n, pid, round(r / 1e9, 1)) for r, pid, n in procs[:4]]}
+            except Exception as exc:
+                mem = {'error': f'{type(exc).__name__}: {str(exc)[:80]}'}
         # Diagnostics for the epoch-14 slowdown / crash of the first TPU runs: XLA compilations so far and device memory.
         try:
             import torch_xla.debug.metrics as met
@@ -268,7 +292,7 @@ def run(index, args):
             hbm = None
         history.append({'epoch': epoch, 'weak_val_bce': val_bce, 'gold_auc_descriptive': gold_auc,
                         'elapsed_seconds': time.time() - started, 'epoch_seconds': seconds, 'plan_epochs': plan_epochs,
-                        'host_free_gb': host_free, 'xla_compiles': compiles, 'device_memory_gb': hbm})
+                        'host_free_gb': host_free, 'xla_compiles': compiles, 'device_memory_gb': hbm, 'host_memory': mem})
         if rank == 0:
             print(json.dumps(history[-1]), flush=True)
             (out / 'history.json').write_text(json.dumps(history, indent=2))

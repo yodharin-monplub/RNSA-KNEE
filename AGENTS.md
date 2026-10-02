@@ -25,7 +25,8 @@ in each model, create a readme.txt
 
 Has GPU and CUDA on local pc = False.
 Consider using local gpu first(if exist) then Kaggle then vast.ai
-Keep KAGGLE\_API\_KEY\_YODHAIRNMONPLUB for kaggle submission only and do not train on that api.
+Keep KAGGLE_API_KEY_YODHAIRNMONPLUB for kaggle submission only and do not train on that api.
+You can use the rest of kaggle api gpu (except for KAGGLE_API_KEY_YODHAIRNMONPLUB) for training as much as possible
 
 openrouter is available.
 Limit per job launch for vast.ai and Openrouter is 5 usd, if you need more ask for approval.
@@ -80,7 +81,7 @@ Search the internet for help.
 
 1. Everyday, once per day when the cpu load is low, backup the project to github. Use a deployment key that you created.
 2. From the data that you have, DM the the estimated probability of getting a prize with the current budget and with more budget that you can requested.
-3. Fill in the table in the csv file in Z:competition.csv with Competition name, Current rank, End date, and usd spent.
+3. Fill in the table in the csv file in Z:competition.csv with Competition name, Current rank, End date,usd spent and your estimated probability of winning prizes.
 
 
 

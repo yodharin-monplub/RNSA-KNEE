@@ -1,0 +1,1 @@
+fold 0: gold AUC 0.9343 (58 gold studies, epoch 16 of 16; descriptive). Folds 1-4 pending. No LB score yet.

@@ -15,4 +15,4 @@ after epochs 7 and 14 as designed, no epoch-14 slowdown (epoch times ~300 s; 462
 Selected epoch 18 (select by confidence-weighted weak-val BCE): BCE 0.3118, gold AUC 0.9126 (descriptive, 58 cases).
 best.pt sha256 e7aa7efedef4f993ebee35aa95e42e1fed69ab127b63b8f91774b5bf7ebbe551 (artifacts/remote_model109/model109).
 Collect: python scripts/collect_tpu_run.py model109 --account yodharinmonplub (download only).
-Use in a leg only with the user's OK (it was trained on the submission-only account).
+Use in a leg: the user OK'd it (Discord DM 2026-10-01 00:42: "yes you can"); added to the fleet weights as model109_best.pt.
