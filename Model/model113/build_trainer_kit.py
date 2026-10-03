@@ -33,7 +33,7 @@ LAYOUT = {
     'targets_v1_oof5f50.csv': 'data/llm_relabel/targets_v1_oof5f50.csv',
 }
 MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112']
-KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_YODHAIRNMONPLUB', 'krittanutsomtuas': 'KAGGLE_API_KEY_WARIN', 'actuarialtutor': 'KAGGLE_API_KEY_KRITTANUT'}
+KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', 'krittanutsomtuas': 'KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org', 'actuarialtutor': 'KAGGLE_API_KEY_krittanutsomtung@actuarialtutor.org', 'aikayui': 'KAGGLE_API_KEY_aikayui@actuarialtutor.org'}
 
 
 def build():

@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_YODHAIRNMONPLUB', os.environ.get('KAGGLE_API_KEY', '')))
+os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', os.environ.get('KAGGLE_API_KEY', '')))
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 
 SOURCE = ROOT / 'artifacts/sources/public_notebooks/mattiaangeli__bend-the-knee-to-speedy-raptors-the-original'

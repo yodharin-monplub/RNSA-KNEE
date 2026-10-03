@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_YODHAIRNMONPLUB', ''))
+os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', ''))
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 from fleet_leg_v2 import FLEET_LEG_V2
 

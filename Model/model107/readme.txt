@@ -10,4 +10,6 @@ predictions when time allows (one-pass reader, byte-identical volumes on 43 real
 LAST fleet members are dropped first instead of abandoning the whole leg (v2 silently fell back to Speedy = model76).
 Priority order = fleet order: model104, model75, model100.
 Build: python scripts/run_speedy_fleet_v2.py --name model107 --title "RSNA Knee Model107 Speedy CoAtNet Leg Plus M104" --weight 0.30 --leg v3 --fleet "[('model104', ['model104_best.pt'], 's96'), ('model75', ['model75_best.pt'], 's64'), ('model100', ['model100_best.pt'], 's96')]"
-Score: pending.
+Dummy run VERIFIED and SUBMITTED 2026-10-03 07:14:40 (+07), submission 56785116.
+Score: public 0.947 (scored 2026-10-03 14:40) = ties the best (model103 0.947, leg model75 + model100);
+adding model104 (alone 0.942) did not show at 3-decimal resolution.

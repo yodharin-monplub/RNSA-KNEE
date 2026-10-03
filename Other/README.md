@@ -4,9 +4,10 @@
 
 Best public AUC **0.947** (model103), rank 114 of 4,642 on 2026-09-30 (gold line = rank 19 = 0.956, silver = top 5% =
 rank 232 = 0.944, bronze = top 10% = 0.943; top 0.961). Competition deadline: 2026-10-22.
-Kaggle keys in Other/.env are named after the owners' e-mail names (never rename them): KAGGLE_API_KEY_YODHAIRNMONPLUB =
-yodharinmonplub (SUBMISSIONS ONLY, per AGENTS.md), KAGGLE_API_KEY_WARIN = krittanutsomtuas (training on its free TPU),
-KAGGLE_API_KEY_KRITTANUT = actuarialtutor (new; GPU works, TPU via API not yet, not joined to the competition yet).
+Kaggle keys in Other/.env are named KAGGLE_API_KEY_<e-mail> (renamed by the user; never rename them, map in code):
+yodharinmonplub@actuarialtutor.org = account yodharinmonplub (SUBMISSIONS ONLY, per AGENTS.md); warinaeinwandee@... =
+krittanutsomtuas (teammate, TPU training); krittanutsomtung@... = actuarialtutor and aikayui@... = aikayui (not joined to
+the competition yet). Scripts map account -> key name in their KEYS dicts.
 model103 = model76 (the public "Speedy Raptors" notebook, 0.943, with its four Raptor CoAtNet views switched to this
 project's own weights - model61) + a final rank-blend leg (w 0.30) over ONLY our two CoAtNet-2 384 px models (model75
 on the 64-frame cache, model100 on the 96-frame cache).

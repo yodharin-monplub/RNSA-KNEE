@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY') or os.environ['KAGGLE_API_KEY_YODHAIRNMONPLUB'])
+os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY') or os.environ['KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org'])
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 
 SLOTS80 = [("Sagittal", 1, 22), ("Sagittal", 0, 18), ("Coronal", 1, 15), ("Coronal", 0, 10), ("Axial", -1, 15)]

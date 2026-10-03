@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / '.env')
-os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY') or os.environ['KAGGLE_API_KEY_YODHAIRNMONPLUB'])
+os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY') or os.environ['KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org'])
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 from kaggle.api.kaggle_api_extended import KaggleApi
 

@@ -25,8 +25,8 @@ in each model, create a readme.txt
 
 Has GPU and CUDA on local pc = False.
 Consider using local gpu first(if exist) then Kaggle then vast.ai
-Keep KAGGLE_API_KEY_YODHAIRNMONPLUB for kaggle submission only and do not train on that api.
-You can use the rest of kaggle api gpu (except for KAGGLE_API_KEY_YODHAIRNMONPLUB) for training as much as possible
+Keep KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org for kaggle submission only and do not train on that api.
+You can use the rest of kaggle api gpu (except for KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org) for training as much as possible
 
 openrouter is available.
 Limit per job launch for vast.ai and Openrouter is 5 usd, if you need more ask for approval.
