@@ -3,4 +3,5 @@ Why: model111 (4 CoAtNet-2 384 members at full windows, w 0.30) is the project b
 nearly Speedy (0.943): test a larger share for our side.
 Built with Other/scripts/run_speedy_fleet_v2.py (--weight 0.50); see EXPERIMENTS.md 2026-10-03.
 Planned submission: Sunday 2026-10-04 07:01.
+Dummy run VERIFIED (all members, none dropped) and SUBMITTED 2026-10-04 07:21:26 (+07), submission 56809960.
 Score: pending.

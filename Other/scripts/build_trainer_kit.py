@@ -31,8 +31,13 @@ LAYOUT = {
     'labels.json': 'artifacts/partitions/labels.json',
     'targets_g38f_low.csv': 'data/llm_relabel/targets_g38f_low.csv',
     'targets_v1_oof5f50.csv': 'data/llm_relabel/targets_v1_oof5f50.csv',
+    # pseudo-label targets of the model113 / model132 students (built by scripts/make_pseudo_targets.py from the
+    # model110 5-fold OOF); optional until all five folds exist
+    'targets_v1_oof110_35.csv': 'data/llm_relabel/targets_v1_oof110_35.csv',
+    'targets_v1_oof110_50.csv': 'data/llm_relabel/targets_v1_oof110_50.csv',
 }
-MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112']
+OPTIONAL = {'targets_v1_oof110_35.csv', 'targets_v1_oof110_50.csv'}
+MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112', 'model113', 'model132']
 KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', 'krittanutsomtuas': 'KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org', 'actuarialtutor': 'KAGGLE_API_KEY_krittanutsomtung@actuarialtutor.org', 'aikayui': 'KAGGLE_API_KEY_aikayui@actuarialtutor.org'}
 
 
@@ -41,6 +46,10 @@ def build():
     for name, rel in LAYOUT.items():
         if (ROOT / rel).exists():
             shutil.copy2(ROOT / rel, KIT / name)
+        elif name in OPTIONAL:
+            layout.pop(name)
+            (KIT / name).unlink(missing_ok=True)
+            print('optional file not built yet, skipped:', rel)
         else:   # cloud/ is a namespace package locally; the kernel gets an empty __init__.py
             assert name.endswith('__init__.py'), rel
             (KIT / name).write_text('')

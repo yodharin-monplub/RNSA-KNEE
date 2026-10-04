@@ -21,8 +21,8 @@
   "plain_bce": true,
   "augment": true,
   "log_gold_each_epoch": true,
-  "targets": "data/llm_relabel/targets_v1_oof110_50.csv",
-  "selection": "model113 = PSEUDO-LABEL STUDENT: model112's full-data CoAtNet-2 384 s96 recipe (all 4,345 non-gold studies, 18 epochs, last epoch) trained on targets = 0.5 x the v1 Gemini labels + 0.5 x model110's 5-fold out-of-fold predictions (scripts/make_pseudo_targets.py; gold rows keep their labels and are never trained on), seed 20261017. The forum's lever (Chris Deotte: single models on pseudo labels match the ensemble; 11th place: 5-fold ResNet 224 px = 0.954). Our earlier pseudo-label failures were frozen-feature HEAD retrains with a weak ResNet34 teacher; this is a full model with a CoAtNet-2 teacher.",
+  "targets": "data/llm_relabel/targets_v1_oof110_35.csv",
+  "selection": "model113 = PSEUDO-LABEL STUDENT: model112's full-data CoAtNet-2 384 s96 recipe (all 4,345 non-gold studies, 18 epochs, last epoch) trained on targets = 0.35 x the v1 Gemini labels + 0.65 x model110's 5-fold out-of-fold predictions (scripts/make_pseudo_targets.py; gold rows keep their labels and are never trained on), seed 20261017. The forum's lever (Chris Deotte: single models on pseudo labels match the ensemble; 11th place: 5-fold ResNet 224 px = 0.954). Our earlier pseudo-label failures were frozen-feature HEAD retrains with a weak ResNet34 teacher; this is a full model with a CoAtNet-2 teacher.",
   "grad_checkpointing": true,
   "select": "last",
   "full_data": true
