@@ -35,9 +35,11 @@ LAYOUT = {
     # model110 5-fold OOF); optional until all five folds exist
     'targets_v1_oof110_35.csv': 'data/llm_relabel/targets_v1_oof110_35.csv',
     'targets_v1_oof110_50.csv': 'data/llm_relabel/targets_v1_oof110_50.csv',
+    'targets_v1_oof110_25.csv': 'data/llm_relabel/targets_v1_oof110_25.csv',   # model138/139 (gold-best mix)
 }
-OPTIONAL = {'targets_v1_oof110_35.csv', 'targets_v1_oof110_50.csv'}
-MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112', 'model113', 'model132', 'model135', 'model137']
+OPTIONAL = {'targets_v1_oof110_35.csv', 'targets_v1_oof110_50.csv', 'targets_v1_oof110_25.csv'}
+MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112', 'model113', 'model132', 'model135', 'model137',
+                 'model138', 'model139']
 KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', 'krittanutsomtuas': 'KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org', 'actuarialtutor': 'KAGGLE_API_KEY_krittanutsomtung@actuarialtutor.org', 'aikayui': 'KAGGLE_API_KEY_aikayui@actuarialtutor.org'}
 
 

@@ -10,3 +10,6 @@ seed 20261018) stays prepared for a later session.
 2026-10-04 12:30: RESCHEDULED on the MAIN account's TPU (AGENTS.md now lets the main account train): model132 (s96) then
 model137 (model135's recipe with seed 20261019, s128) in one session, pushed once the full 5-fold targets exist.
 Pushed 2026-10-04 16:22 on the main account: yodharinmonplub/rsna-knee-tpu-train-model132-then-model137 (model132 first, then model137 on the 128-frame cache).
+TRAINED 2026-10-05 (main-account TPU, yodharinmonplub/rsna-knee-tpu-train-model132-then-model137, ran 10:41-17:06 after
+~18 h queued; 18 epochs): gold AUC 0.9336 at epoch 18 (mean of epochs 14-18 0.9328) - alpha 0.5 is ~0.002 below the
+alpha 0.35 student model113 (0.9347) on gold. best.pt sha256 789e77fb..., fleet weights model132_best.pt. LB pending.

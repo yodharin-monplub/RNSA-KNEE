@@ -11,3 +11,7 @@ Config: Model/model137/config.json (differs from model135's only in seed and des
 In the fleet leg: geometry 's128x336' of fleet leg v5 (reader parity with the cache checked on 58 gold studies).
 Score: pending.
 Pushed 2026-10-04 16:22 on the main account: yodharinmonplub/rsna-knee-tpu-train-model132-then-model137 (model132 first, then model137 on the 128-frame cache).
+TRAINED 2026-10-05 (same main-account session, after model132, s128 cache swapped in): gold AUC 0.9340 at epoch 18
+(mean of epochs 14-18 0.9337) vs model135 (same recipe, seed 20261017) 0.9340 (0.9334) and model113 (s96) 0.9357
+(0.9347): two 128-frame seeds agree; on gold, 128 frames remain ~0.001 below 96 frames (noise level).
+best.pt sha256 7b04855f..., fleet weights model137_best.pt. LB pending.

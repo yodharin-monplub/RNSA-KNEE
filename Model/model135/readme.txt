@@ -15,3 +15,8 @@ In the fleet leg: geometry 's128x336' of fleet leg v5 (Other/scripts/fleet_leg_v
 Score: pending.
 Reader parity 2026-10-04: the leg v5 reader at 's128x336' rebuilds all 58 gold studies byte-identical to this cache (krittanutsomtuas/rsna-knee-cache-vs-leg-s128).
 Pushed 2026-10-04 16:07 on the teammate account: krittanutsomtuas/rsna-knee-tpu-train-model113-then-model135 (model113 first, then model135 on the 128-frame cache).
+TRAINED 2026-10-05 (same TPU session, after model113; the s96 cache was freed and the s128 cache unpacked in the session;
+18 epochs, ~426 s/epoch = +11% vs s96): gold AUC 0.9340 at epoch 18 (mean of epochs 14-18 0.9334) vs model113 (s96,
+same everything else) 0.9357 (0.9347): on gold the 128-frame input is ~0.001 BELOW 96 frames at nearly every late epoch
+(58 studies: not significant). The LB A/B (model113 alone vs model135 alone) decides. best.pt sha256 3f819063...,
+fleet weights model135_best.pt.

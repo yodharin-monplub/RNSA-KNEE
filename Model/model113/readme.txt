@@ -22,3 +22,7 @@ fold models' gold predictions): labels 0.9035 | teacher alone 0.9319 | alpha 0.1
 so slightly more label weight than the 0.3 peak). Second student model132 at alpha 0.5.
 Score: pending.
 Pushed 2026-10-04 16:07 on the teammate account: krittanutsomtuas/rsna-knee-tpu-train-model113-then-model135 (model113 first, then model135 on the 128-frame cache).
+TRAINED 2026-10-05 (TPU session 4, krittanutsomtuas/rsna-knee-tpu-train-model113-then-model135, ran 10:07-16:57 after
+~18 h queued; 18 epochs, ~385 s/epoch): gold AUC 0.9357 at epoch 18 (mean of epochs 14-18 0.9347) vs model112 (same
+recipe on plain labels) 0.9319 (0.9317) -> the pseudo-label student is ~+0.003 on gold. best.pt sha256 8e64f127...,
+fleet weights model113_best.pt. LB: pending (submissions resume Sat 2026-10-10).
