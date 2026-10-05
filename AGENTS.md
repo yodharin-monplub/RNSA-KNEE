@@ -23,13 +23,22 @@ in each model, create a readme.txt
 
 ## Hardware limitation
 
-Has GPU and CUDA on local pc = False.
-Consider using local gpu first(if exist) then Kaggle then vast.ai
-Keep KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org for kaggle submission only and do not train on that api.
-You can use the rest of kaggle api gpu (except for KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org) for training as much as possible
+Has GPU and CUDA on local pc = True.
 
-openrouter is available.
-Limit per job launch for vast.ai and Openrouter is 5 usd, if you need more ask for approval.
+I have a team with many kaggle ids.
+- If this is kaggle competition use:
+	KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org
+	KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org
+	to train and submit. They these 2 id have join team.
+- If this is not a kaggle competitions, use the rest of the kaggle api to train.
+- The quotas is shared with other competitions
+- If kaggle GPU and TPU data runs out, the submission can't be made. use with care
+
+Priority
+- Consider using local gpu first(if exist) then Kaggle then vast.ai.
+
+Other resources
+- openrouter is available.
 
 ## Cloud spending behaviour
 

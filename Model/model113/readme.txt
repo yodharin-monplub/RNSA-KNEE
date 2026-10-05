@@ -21,3 +21,4 @@ fold models' gold predictions): labels 0.9035 | teacher alone 0.9319 | alpha 0.1
 0.4 0.9408 | 0.5 0.9386 -> alpha 0.35 (training targets use ONE fold model per study, noisier than the 4-fold mean,
 so slightly more label weight than the 0.3 peak). Second student model132 at alpha 0.5.
 Score: pending.
+Pushed 2026-10-04 16:07 on the teammate account: krittanutsomtuas/rsna-knee-tpu-train-model113-then-model135 (model113 first, then model135 on the 128-frame cache).

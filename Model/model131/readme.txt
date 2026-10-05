@@ -4,4 +4,4 @@ model127 0.50 (all submitted Sunday 2026-10-04 07:01 except model111).
 Build: run_speedy_fleet_v2.py --name model131 --title "RSNA Knee Model131 Leg Four Full W35" --weight 0.35 --leg v3 --fleet
 "[('model104', ['model104_best.pt'], 's96'), ('model75', ['model75_best.pt'], 's64'), ('model100', ['model100_best.pt'], 's96'), ('model98', ['model98_best.pt'], 's64')]"
 Dummy run VERIFIED (all members, none dropped) and SUBMITTED 2026-10-04 07:22:11 (+07), submission 56809974.
-Score: pending.
+Score: public 0.948 (scored 2026-10-04 14:41) = ties the project best (model111 at w 0.30 = 0.948).

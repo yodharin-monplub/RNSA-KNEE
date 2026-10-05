@@ -1,0 +1,1 @@
+public 0.947 (submission 56809987, scored 2026-10-04 15:59; model110f0 instead of model100, w 0.30)

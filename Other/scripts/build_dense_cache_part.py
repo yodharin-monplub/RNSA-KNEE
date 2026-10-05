@@ -127,7 +127,10 @@ def main():
     manifest['compressed_bytes']=sum(s['bytes'] for s in manifest['shards'])
     manifest['training_metadata_sha256']=hashlib.sha256((root/'train.csv').read_bytes()).hexdigest()
     manifest['note']='Competition-derived pixels; private training cache. Combine all four parts by manifest UID.'
-    assert manifest['compressed_bytes'] < 10_000_000_000
+    print('compressed bytes', manifest['compressed_bytes'], flush=True)
+    # Kaggle keeps up to 20 GB of /kaggle/working; 128 frames at 336 px need ~11.3 GB per quarter (2026-10-04: the
+    # old 10 GB guard stopped all four s128 parts after caching every study)
+    assert manifest['compressed_bytes'] < 18_000_000_000
     (out/'cache_manifest.json').write_text(json.dumps(manifest,indent=2))
     print(json.dumps({k:v for k,v in manifest.items() if k!='shards'}),flush=True)
 

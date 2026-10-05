@@ -1,1 +1,1 @@
-fold 0: gold AUC 0.9343 (58 gold studies, epoch 16 of 16; descriptive). Folds 1-4 pending. No LB score yet.
+gold AUC (TPU eval, 58 studies): fold0 0.9343, fold1 0.9258, fold2 0.9178, fold3 0.9262, fold4 0.9339; 5-fold mean 0.9350

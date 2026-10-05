@@ -4,3 +4,9 @@ Trained after model113 in the same TPU session (run_tpu_train.py --name model113
 Purpose: LB comparison of the label/teacher mix (model113 = 0.35/0.65) and a second student for the leg.
 Files: config.json (code: Model/model113 / Other/scripts).
 Score: pending.
+2026-10-04 11:44: DEFERRED. TPU session 4 now trains model113 then model135 (model113's exact recipe on the new 128-frame
+cache) instead of model132: the s96 vs s128 A/B answers a bigger question with the same TPU time. model132 (alpha 0.5,
+seed 20261018) stays prepared for a later session.
+2026-10-04 12:30: RESCHEDULED on the MAIN account's TPU (AGENTS.md now lets the main account train): model132 (s96) then
+model137 (model135's recipe with seed 20261019, s128) in one session, pushed once the full 5-fold targets exist.
+Pushed 2026-10-04 16:22 on the main account: yodharinmonplub/rsna-knee-tpu-train-model132-then-model137 (model132 first, then model137 on the 128-frame cache).

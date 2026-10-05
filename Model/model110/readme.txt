@@ -15,3 +15,9 @@ process 3 cut it to 16 epochs; the old kernel rule then skipped folds 1-2). Fold
 (sha256 b837d3c7...). Folds 1-4 (+ model112): next session, after the teammate TPU quota refresh (Sat 07:00),
 kernel model110-f1234-then-model112 (cache in /dev/shm, steady-state fold estimate) pushed by scratch tpu_chain2.py.
 Score: fold 0 gold 0.9343 (see score.txt).
+2026-10-04 15:54 ALL FIVE FOLDS DONE: fold 1 0.9258 / fold 2 0.9178 / fold 3 0.9262 (TPU session 2,
+krittanutsomtuas/rsna-knee-tpu-train-model110-f1234-then-model112) and fold 4 0.9339 (session 3,
+krittanutsomtuas/rsna-knee-tpu-train-model110-f4-then-model112; 18 epochs, OOF 892, best.pt sha256 e521aa2d...).
+Gold of the 5-fold mean: 0.9350. Complete OOF (4,345 non-gold studies) -> pseudo-label targets
+data/llm_relabel/targets_v1_oof110_35.csv (gold 0.9423) and _50.csv (0.9398) for the students model113/132/135/137.
+All five folds are in the fleet weights (model110_fold{0..4}_best.pt).

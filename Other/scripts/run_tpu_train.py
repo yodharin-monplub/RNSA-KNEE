@@ -47,7 +47,8 @@ PLAN = __PLAN__
 NAME = __NAME__
 CACHE = __CACHE__
 FOLDS = __FOLDS__
-THEN = __THEN__          # optional second model trained after the plan, same session and cache
+THEN = __THEN__          # optional second model trained after the plan, same session (and cache unless THEN_CACHE)
+THEN_CACHE = __THEN_CACHE__   # geometry for THEN when it differs from CACHE (the first cache is freed, this one unpacked)
 STOP_AT = started + __TRAIN_SECONDS__
 IN = Path('/kaggle/input')
 ROOT = Path('/kaggle/working/rsna')
@@ -114,12 +115,13 @@ def space(path):
         return 0
 
 
-def unpack(pilot):
-    """Unpack the pilot cache or the full cache (geometry CACHE) to local disk; returns its folder."""
-    geometry = 'pilot' if pilot else CACHE
-    chosen = [m for m in manifests if {'pilot': 'pilot' in str(m), 's96': '-s96' in str(m),
-                                       's64': 'pilot' not in str(m) and '-s96' not in str(m)}[geometry]]
-    need = {'pilot': 8e9, 's64': 40e9, 's96': 55e9}[geometry]   # 4,407 studies unpack to ~32 GB (64 frames) / ~48 GB (96)
+def unpack(pilot, geometry=None):
+    """Unpack the pilot cache or a full cache (geometry CACHE unless given) to local disk; returns its folder."""
+    geometry = 'pilot' if pilot else (geometry or CACHE)
+    chosen = [m for m in manifests if {'pilot': 'pilot' in str(m), 's96': '-s96' in str(m), 's128': '-s128' in str(m),
+                                       's64': 'pilot' not in str(m) and '-s96' not in str(m) and '-s128' not in str(m)}[geometry]]
+    # 4,407 studies unpack to ~32 GB (64 frames) / ~48 GB (96) / ~64 GB (128 frames at 336 px)
+    need = {'pilot': 8e9, 's64': 40e9, 's96': 55e9, 's128': 72e9}[geometry]
     # The full cache goes to RAM (/dev/shm, 164 GB) when it fits with room to spare: unpacked to /tmp, the first two
     # epochs read at a crawl while the disk flushes (2026-09-30 model110 fold 0: 700-880 s per 100 steps in epochs 1-2,
     # ~65 s once cached; model104 epochs 1-2 = 4,895 + 4,200 s vs 337 s later).
@@ -128,8 +130,8 @@ def unpack(pilot):
     dest = Path(base) / ('dense_pilot' if pilot else 'dense')
     t0 = time.time()
     print('cache', [str(m) for m in chosen], '->', dest, f'free {space(base) / 1e9:.0f} GB', flush=True)
-    print(prepare(chosen, ROOT / 'data/train.csv', dest, pilot=pilot, size=336, slots=96 if geometry == 's96' else 64),
-          flush=True)
+    print(prepare(chosen, ROOT / 'data/train.csv', dest, pilot=pilot, size=336,
+                  slots={'s96': 96, 's128': 128}.get(geometry, 64)), flush=True)
     print('cache ready', round(time.time() - t0), 's', flush=True)
     return dest
 
@@ -233,6 +235,9 @@ if ok and THEN and dest is not None:
         print(f'{THEN} not started: {left:.0f}s left, needs ~{need:.0f}s', flush=True)
     else:
         print(f'{THEN} starting: {left:.0f}s left, needs ~{need:.0f}s', flush=True)
+        if THEN_CACHE and THEN_CACHE != CACHE:
+            shutil.rmtree(dest, ignore_errors=True)   # free RAM (/dev/shm) before unpacking the second geometry
+            dest = unpack(False, THEN_CACHE)
         ok = train_with_resume(dest, Path('/kaggle/working') / THEN, STOP_AT, config=ROOT / THEN / 'config.json') and ok
 if dest is not None:
     shutil.rmtree(dest, ignore_errors=True)
@@ -250,10 +255,13 @@ def main():
     parser.add_argument('--name', default='model98')
     parser.add_argument('--plan', choices=['smoke', 'full', 'smoke+full', 'cpu-test', 'folds', 'smoke+folds'],
                         default='smoke+full')
-    parser.add_argument('--cache', choices=['s64', 's96'], default='s64')
+    parser.add_argument('--cache', choices=['s64', 's96', 's128'], default='s64',
+                        help='s128 = 128 frames (32/24/24/24/24) at 336 px, built 2026-10-04 on the teammate account')
     parser.add_argument('--folds', default='', help='k-fold plans: fold indices to run in this session, e.g. 0,1,2')
     parser.add_argument('--acc', default='TpuV5E8')
     parser.add_argument('--then', default='', help='second model config (same cache) trained after the plan if time allows')
+    parser.add_argument('--then-cache', choices=['s64', 's96', 's128'], default=None,
+                        help='cache geometry of --then when it differs from --cache (e.g. an s96 vs s128 A/B in one session)')
     parser.add_argument('--then-ratio', type=float, default=1.25,
                         help='expected duration of --then relative to the last fold/full run (full data vs a fold: 1.25)')
     parser.add_argument('--account', default='yodharinmonplub', choices=sorted(KEYS),
@@ -275,6 +283,7 @@ def main():
     code = (KERNEL.replace('__PLAN__', repr(args.plan)).replace('__NAME__', repr(args.name))
             .replace('__CACHE__', repr(args.cache)).replace('__FOLDS__', repr(folds))
             .replace('__THEN__', repr(args.then or None)).replace('__THEN_RATIO__', repr(args.then_ratio))
+            .replace('__THEN_CACHE__', repr(args.then_cache if args.then and args.then_cache != args.cache else None))
             .replace('__TRAIN_SECONDS__', str(SESSION_LIMIT_S - MARGIN_S)).replace('__SMOKE_LIMIT_S__', str(SMOKE_LIMIT_S)))
     compile(code, 'tpu_kernel', 'exec')
     (folder / 'train_tpu.py').write_text(code, encoding='utf-8')
@@ -282,8 +291,11 @@ def main():
     if args.plan in ('smoke', 'smoke+full', 'cpu-test', 'smoke+folds'):
         cache.append('yodharinmonplub/rsna-knee-dense-cache-pilot')
     if args.plan in ('full', 'smoke+full', 'folds', 'smoke+folds'):
-        slug = 'rsna-knee-dense-cache-336-part{}-s96' if args.cache == 's96' else 'rsna-knee-dense-cache-part{}'
-        cache += [f'yodharinmonplub/{slug.format(i)}' for i in range(4)]
+        slugs = {'s96': 'yodharinmonplub/rsna-knee-dense-cache-336-part{}-s96',
+                 's128': 'krittanutsomtuas/rsna-knee-dense-cache-336-part{}-s128',
+                 's64': 'yodharinmonplub/rsna-knee-dense-cache-part{}'}
+        for geometry in dict.fromkeys([args.cache] + ([args.then_cache] if args.then and args.then_cache else [])):
+            cache += [slugs[geometry].format(i) for i in range(4)]
     meta = {'id': f'{args.account}/rsna-knee-tpu-train-{suffix}', 'title': f'RSNA Knee TPU Train {suffix.replace("-", " ")}',
             'code_file': 'train_tpu.py', 'language': 'python', 'kernel_type': 'script', 'is_private': True,
             'enable_gpu': False, 'enable_tpu': not cpu, 'enable_internet': True,

@@ -16,4 +16,5 @@ model112/: best.pt, history.json, gold_predictions.csv, metrics.json with full_d
 
 Files: config.json, train_xla.py (full_data option), xla_data.py, tpu_common.py, run_tpu_train.py (--then option,
 exit-0 kernels), build_trainer_kit.py, collect_tpu_run.py, make_pseudo_targets.py (for the later pseudo-label student).
-Score: pending.
+TRAINED 2026-10-04 (TPU session 3 on krittanutsomtuas, after model110 fold 4; 18 epochs, ~385 s/epoch steady): gold AUC 0.9319 (TPU eval, last epoch), best.pt sha256 68a5e5b5..., fleet weights model112_best.pt.
+Score: gold 0.9319; not yet on the LB (submissions blocked until Sat 2026-10-10 by the main GPU quota).

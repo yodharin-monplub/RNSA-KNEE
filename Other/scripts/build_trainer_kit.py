@@ -37,7 +37,7 @@ LAYOUT = {
     'targets_v1_oof110_50.csv': 'data/llm_relabel/targets_v1_oof110_50.csv',
 }
 OPTIONAL = {'targets_v1_oof110_35.csv', 'targets_v1_oof110_50.csv'}
-MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112', 'model113', 'model132']
+MODEL_CONFIGS = ['model98', 'model100', 'model104', 'model109', 'model110', 'model112', 'model113', 'model132', 'model135', 'model137']
 KEYS = {'yodharinmonplub': 'KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', 'krittanutsomtuas': 'KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org', 'actuarialtutor': 'KAGGLE_API_KEY_krittanutsomtung@actuarialtutor.org', 'aikayui': 'KAGGLE_API_KEY_aikayui@actuarialtutor.org'}
 
 

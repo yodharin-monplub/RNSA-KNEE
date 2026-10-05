@@ -7,12 +7,15 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT/'.env');os.environ.setdefault('KAGGLE_API_TOKEN',os.environ['KAGGLE_API_KEY'])
+load_dotenv(ROOT/'.env')
 os.environ['KAGGLE_CONFIG_DIR']=str(ROOT/'.kaggle')
-from kaggle.api.kaggle_api_extended import KaggleApi
+# kernel owner -> .env key (the main account is submit-only since 2026-09-30; caches are built on a teammate account)
+KEYS={'yodharinmonplub':'KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org','krittanutsomtuas':'KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org'}
 
-parser=argparse.ArgumentParser();parser.add_argument('--part',type=int,choices=range(4),required=True);parser.add_argument('--size',type=int,choices=[256,336,384],default=336);parser.add_argument('--span',choices=['2-98','6-94'],default='2-98');parser.add_argument('--slots',type=int,choices=[64,44,96,128],default=64);parser.add_argument('--dry',action='store_true');args=parser.parse_args()
-api=KaggleApi();api.authenticate();user=api.get_config_value('username')
+parser=argparse.ArgumentParser();parser.add_argument('--part',type=int,choices=range(4),required=True);parser.add_argument('--account',choices=sorted(KEYS),default='krittanutsomtuas');parser.add_argument('--size',type=int,choices=[256,336,384],default=336);parser.add_argument('--span',choices=['2-98','6-94'],default='2-98');parser.add_argument('--slots',type=int,choices=[64,44,96,128],default=64);parser.add_argument('--dry',action='store_true');args=parser.parse_args()
+os.environ['KAGGLE_API_TOKEN']=os.environ[KEYS[args.account]]
+from kaggle.api.kaggle_api_extended import KaggleApi
+api=KaggleApi();api.authenticate();user=args.account
 span_tag='' if args.span=='2-98' else '_6_94'
 span_slug='' if args.span=='2-98' else ('-336-6-94' if args.size==336 else '-6-94')
 tag=('' if args.size==336 else f'_{args.size}')+span_tag+('' if args.slots==64 else f'_s{args.slots}')
@@ -35,7 +38,7 @@ if args.slots==96:
     assert source.count(SLOTS64_SRC)==1;source=source.replace(SLOTS64_SRC,SLOTS96_SRC)
 (out/'inference.py').write_text(source)
 title=(f'RSNA Knee Dense Cache {args.size} {args.span} Part{args.part}' if args.span!='2-98' else f'RSNA Knee Dense Cache {args.size} Part{args.part}')+('' if args.slots==64 else f' S{args.slots}')
-meta={'id':f'{user}/rsna-knee-dense-cache{slug}-part{args.part}','title':title,
+meta={'id':f'{user}/'+title.lower().replace(' ','-'),'title':title,   # Kaggle derives the slug from the title
       'code_file':'inference.py','language':'python','kernel_type':'script','is_private':True,
       'enable_gpu':False,'enable_internet':False,
       'dataset_sources':[],
