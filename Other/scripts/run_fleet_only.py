@@ -22,6 +22,7 @@ load_dotenv(ROOT / '.env')
 os.environ.setdefault('KAGGLE_API_TOKEN', os.environ.get('KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org', ''))
 os.environ['KAGGLE_CONFIG_DIR'] = str(ROOT / '.kaggle')
 from fleet_leg_v2 import FLEET_LEG_V2
+from fleet_leg_v6 import FLEET_LEG_V6
 
 DOCKER = 'gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461'
 FLEET_SRC = """_M80_FLEET = [('model72', ['model72_best.pt'], 's64'),
@@ -29,16 +30,23 @@ FLEET_SRC = """_M80_FLEET = [('model72', ['model72_best.pt'], 's64'),
               ('model73', ['model73_best.pt'], 's64')]"""
 
 
-def cell_for(fleet):
-    s = FLEET_LEG_V2.lstrip('\n')
+def cell_for(fleet, leg='v2'):
+    # v2 (default, earlier models rebuild exactly) or v6 (2026-10-06: 's128x336' geometry, per-member window stride as a
+    # 4th tuple element, one-pass reader, priority dropping / partial coverage under the time guard)
+    s = {'v2': FLEET_LEG_V2, 'v6': FLEET_LEG_V6}[leg].lstrip('\n')
     head_end = s.index('def _m80_fleet_leg():')
     body = s[head_end:]
     members = ast.literal_eval(fleet)
-    assert all(g in ('s64', 's96', 's128') and all(f.endswith('.pt') for f in files) for _, files, g in members)
+    geometries = ('s64', 's96', 's128') + (('s128x336',) if leg == 'v6' else ())
+    assert all(len(m) in ((3, 4) if leg == 'v6' else (3,)) and m[2] in geometries and all(f.endswith('.pt') for f in m[1])
+               for m in members)
+    # constants the v6 body reads that the v2 body does not (readers / prefetch / partial coverage)
+    extra = ''.join(line + '\n' for line in s[:head_end].splitlines()
+                    if line.startswith(('_M80_READERS =', '_M80_PREFETCH =', '_M80_MIN_PARTIAL ='))) if leg == 'v6' else ''
     header = ("# ---- fleet ONLY (no public models): this project's fully trained models, mean probability ----\n"
               "# Each member is read at its training geometry ('s64' 64 frames @ 336 px, 's128' 128 frames @ 256 px).\n"
               "import os as _fo_os\n"
-              "_M80_SAFETY_S = 1800\n"
+              "_M80_SAFETY_S = 1800\n" + extra +
               "_M80_FLEET = " + repr(members) + "\n"
               "_fo_roots = [p for p in ('/kaggle/input/competitions/rsna-knee-abnormality-detection',\n"
               "                         '/kaggle/input/rsna-knee-abnormality-detection') if _fo_os.path.exists(p + '/test.csv')]\n"
@@ -78,8 +86,8 @@ _m80_fleet_leg()
     return text
 
 
-def build(name, title, fleet):
-    cell = cell_for(fleet)
+def build(name, title, fleet, leg='v2'):
+    cell = cell_for(fleet, leg)
     nb = {'cells': [{'cell_type': 'code', 'execution_count': None, 'metadata': {}, 'outputs': [],
                      'source': cell.splitlines(keepends=True)}],
           'metadata': {'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'},
@@ -97,7 +105,7 @@ def build(name, title, fleet):
         target.mkdir(parents=True, exist_ok=True)
         (target / 'notebook.ipynb').write_text(json.dumps(nb, indent=1), encoding='utf-8')
         (target / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2))
-    for script in ('run_fleet_only.py', 'fleet_leg_v2.py'):
+    for script in ('run_fleet_only.py', 'fleet_leg_v2.py') + (('fleet_leg_v6.py',) if leg == 'v6' else ()):
         shutil.copy2(Path(__file__).resolve().parent / script, model_dir / script)
     return folder, meta
 
@@ -107,10 +115,12 @@ def main():
     parser.add_argument('--name', required=True)
     parser.add_argument('--title', required=True)
     parser.add_argument('--fleet', required=True, help="[('member', ['file.pt', ...], 's64'|'s128'), ...]")
+    parser.add_argument('--leg', choices=['v2', 'v6'], default='v2',
+                        help="v6: 's128x336' geometry and window strides (4-tuples); v2 keeps earlier builds exact")
     parser.add_argument('--push', action='store_true')
     args = parser.parse_args()
     assert len(args.title) <= 50, 'Kaggle caps titles at 50 characters'
-    folder, meta = build(args.name, args.title, args.fleet)
+    folder, meta = build(args.name, args.title, args.fleet, args.leg)
     print('built', folder, '| kernel', meta['id'])
     if args.push:
         from kaggle.api.kaggle_api_extended import KaggleApi

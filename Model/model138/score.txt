@@ -1,0 +1,1 @@
+gold AUC 0.9308 (epoch 18; mean epochs 14-18 0.9306); LB pending

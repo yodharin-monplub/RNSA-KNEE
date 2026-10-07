@@ -9,3 +9,4 @@ Session (main account, TPU session B): python scripts/run_tpu_train.py --name mo
 Config: Model/model139/config.json (differs from model113's in seed, targets and description).
 Score: pending.
 Pushed 2026-10-05 17:13 on the main account: yodharinmonplub/rsna-knee-tpu-train-model138-then-model139.
+2026-10-06: main session B was cancelled before model139 started (see Model/model138); model139 is deferred.

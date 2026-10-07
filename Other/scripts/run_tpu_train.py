@@ -40,9 +40,10 @@ MARGIN_S = 40 * 60           # time left after training for the last save and th
 SMOKE_LIMIT_S = 45 * 60      # a hung smoke run (2026-09-28: dead loader thread, 2 h of TPU burned) is killed
 
 KERNEL = r'''
-import json, os, shutil, signal, subprocess, sys, time
+import json, os, shutil, signal, subprocess, sys, threading, time
 from pathlib import Path
 started = time.time()
+WATCHDOG_S = 25 * 60     # a trainer silent this long is treated as hung (see run_trainer)
 PLAN = __PLAN__
 NAME = __NAME__
 CACHE = __CACHE__
@@ -79,8 +80,12 @@ for name, rel in json.loads((kit / 'layout.json').read_text()).items():
 comp = next(Path(p) for p in ('/kaggle/input/competitions/rsna-knee-abnormality-detection',
                               '/kaggle/input/rsna-knee-abnormality-detection') if Path(p, 'train.csv').exists())
 (ROOT / 'data').mkdir(exist_ok=True); shutil.copy2(comp / 'train.csv', ROOT / 'data/train.csv')
-bb = find('coatnet_rmlp_2_rw_384.sw_in12k_ft_in1k.safetensors')[0]
-(ROOT / 'data/weights').mkdir(parents=True, exist_ok=True); shutil.copy2(bb, ROOT / 'data/weights' / bb.name)
+(ROOT / 'data/weights').mkdir(parents=True, exist_ok=True)
+for name in sorted({c.get('pretrained_file') for c in (json.loads((ROOT / m / 'config.json').read_text())
+                                                        for m in [NAME] + ([THEN] if THEN else []))} - {None}):
+    # every config's ImageNet backbone (2026-10-06: not only CoAtNet-2) from its attached rsna-knee-backbone-* dataset
+    bb = find(Path(name).name)[0]
+    shutil.copy2(bb, ROOT / name)
 print('inputs ready', round(time.time() - started), 's', flush=True)
 
 config_path = ROOT / NAME / 'config.json'
@@ -147,14 +152,34 @@ def run_trainer(dest, out, stop_at, smoke=False, fold=None, resume=False, config
     t0 = time.time()
     # Own process group, so a hang can be killed with every chip process and loader worker it spawned.
     limit = __SMOKE_LIMIT_S__ if smoke else max(600, stop_at - time.time() + 15 * 60)
-    proc = subprocess.Popen(cmd, env=env, start_new_session=True)
-    try:
-        rc = proc.wait(timeout=limit)
-    except subprocess.TimeoutExpired:
-        os.killpg(proc.pid, signal.SIGKILL)
-        proc.wait()
-        rc = -9
-        print(f'train_xla TIMED OUT after {limit:.0f}s - process group killed', flush=True)
+    # Watchdog (2026-10-06, main session B): a DataLoader worker died inside torch_xla's loader thread, the chips then
+    # waited for data forever and the session sat silent for 2 h until it was cancelled. The trainer prints every 100
+    # steps (~50 s) and an epoch incl. evaluation is ~7 min, so 25 min without any output = hung -> kill the process
+    # group; train_with_resume then resumes from last.pt like after any crash.
+    proc = subprocess.Popen(cmd, env=env, start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True, bufsize=1, errors='replace')
+    last_output = [time.time()]
+
+    def pump():
+        for line in proc.stdout:
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            last_output[0] = time.time()
+
+    threading.Thread(target=pump, daemon=True).start()
+    rc = None
+    while rc is None:
+        try:
+            rc = proc.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            now = time.time()
+            reason = (f'TIMED OUT after {limit:.0f}s' if now - t0 > limit else
+                      f'SILENT for {now - last_output[0]:.0f}s (assumed hung)' if now - last_output[0] > WATCHDOG_S else None)
+            if reason:
+                os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait()
+                rc = -9
+                print(f'train_xla {reason} - process group killed', flush=True)
     print('train_xla', 'smoke' if smoke else 'full', '' if fold is None else f'fold {fold}', 'exit code', rc, 'train',
           round(time.time() - t0), 's, session', round(time.time() - started), 's', flush=True)
     return rc == 0 and (out / 'TRAINING_COMPLETE').exists()
@@ -296,10 +321,17 @@ def main():
                  's64': 'yodharinmonplub/rsna-knee-dense-cache-part{}'}
         for geometry in dict.fromkeys([args.cache] + ([args.then_cache] if args.then and args.then_cache else [])):
             cache += [slugs[geometry].format(i) for i in range(4)]
+    # backbone datasets: each config names one (pretrained_dataset 'owner/rsna-knee-backbone-X'); the kernel owner holds
+    # its own copy (new private datasets do not cross accounts), so only the slug is taken from the config
+    backbones = []
+    for model in [args.name] + ([args.then] if args.then else []):
+        config = json.loads((ROOT.parent / 'Model' / model / 'config.json').read_text())
+        slug = config.get('pretrained_dataset', 'x/rsna-knee-backbone-coatnet2').split('/')[-1]
+        backbones.append(f'{args.account}/{slug}')
     meta = {'id': f'{args.account}/rsna-knee-tpu-train-{suffix}', 'title': f'RSNA Knee TPU Train {suffix.replace("-", " ")}',
             'code_file': 'train_tpu.py', 'language': 'python', 'kernel_type': 'script', 'is_private': True,
             'enable_gpu': False, 'enable_tpu': not cpu, 'enable_internet': True,
-            'dataset_sources': [f'{args.account}/rsna-knee-trainer-kit', f'{args.account}/rsna-knee-backbone-coatnet2'],
+            'dataset_sources': [f'{args.account}/rsna-knee-trainer-kit'] + list(dict.fromkeys(backbones)),
             'competition_sources': ['rsna-knee-abnormality-detection'], 'kernel_sources': cache, 'model_sources': []}
     assert len(meta['title']) <= 50, meta['title']
     (folder / 'kernel-metadata.json').write_text(json.dumps(meta, indent=2))

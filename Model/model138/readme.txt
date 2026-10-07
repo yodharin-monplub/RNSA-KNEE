@@ -9,3 +9,8 @@ Session (main account, TPU session B): python scripts/run_tpu_train.py --name mo
 Config: Model/model138/config.json (differs from model113's in seed, targets and description).
 Score: pending.
 Pushed 2026-10-05 17:13 on the main account: yodharinmonplub/rsna-knee-tpu-train-model138-then-model139.
+2026-10-06: main session B (model138 -> model139) hung after a DataLoader worker died in epoch 8 and was cancelled at 09:44 (nothing saved). Re-pushed 09:50 as the second model of yodharinmonplub/rsna-knee-tpu-train-model140-then-model138 (kernel with a 25-min watchdog).
+TRAINED 2026-10-06 (second model of the main-account session model140-then-model138, after the watchdog fix; 18 epochs,
+~380 s/epoch): gold AUC 0.9308 at epoch 18 (mean of epochs 14-18 0.9306) vs model113 (alpha 0.35, seed 20261017) 0.9347:
+the alpha 0.25 student is not better on gold (seed noise between two 128-frame seeds was only ~0.0003). Spearman vs
+model113 0.988. best.pt sha256 30703bb3..., fleet weights model138_best.pt.
