@@ -124,7 +124,7 @@ dm('RSNA: the student helps on the LB -> round 2 starts',
 # 2) the 5-fold student. A session can fail before our code runs (2026-10-07/08: Kaggle's "ERRORED_MOUNTING_DATASET"
 #    bug on notebook-output inputs - empty log, status ERROR, no TPU time charged): re-push such a session up to twice.
 SESSIONS = [('krittanutsomtuas', 'model147-f012', OTHER / 'artifacts/tpu_model147_f012_notebook', [0, 1, 2]),
-            ('yodharinmonplub', 'model147-f34', OTHER / 'artifacts/tpu_model147_f34_notebook', [3, 4])]
+            ('krittanutsomtuas', 'model147-f34', OTHER / 'artifacts/tpu_model147_f34_notebook', [3, 4])]
 
 
 def folds_done(k_list):
@@ -173,7 +173,7 @@ for account in ('krittanutsomtuas', 'yodharinmonplub'):
     else:
         stop(f'kit push failed for {account}:\n{out[-800:]}')
 time.sleep(600)
-for name, account in (('model148', 'yodharinmonplub'), ('model149', 'krittanutsomtuas')):
+for name, account in (('model148', 'krittanutsomtuas'), ('model149', 'krittanutsomtuas')):
     code, out = run(['scripts/run_tpu_train.py', '--name', name, '--plan', 'full', '--cache', 's96', '--account', account], 600)
     m = re.search(r'built (.+?_notebook) \|', out)
     if not m:

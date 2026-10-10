@@ -2,3 +2,4 @@ Model144: Same as model142 (students leg) at w 0.60: weight curve with the stron
 Build (from Other/): python scripts/run_speedy_fleet_v2.py --name model144 --title "RSNA Knee Model144 Students Leg W60" --weight 0.60 --leg v6 --dummy light --fleet "[('model113', ['model113_best.pt'], 's96', 2), ('model104', ['model104_best.pt'], 's96', 2), ('model112', ['model112_best.pt'], 's96', 2), ('model132', ['model132_best.pt'], 's96', 2)]"
 Planned: dummy run + submission Sat 2026-10-10 from 07:01 (main GPU quota refresh).
 Score: pending.
+2026-10-09: NOT scheduled for Saturday any more - the public frontier moved to 0.950 (Versia_5 etc.), so Saturday's slots go to Versia_5 + our leg (model150-153) and model143; kept for possible later use.

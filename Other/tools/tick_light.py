@@ -30,10 +30,16 @@ NB = json.loads((D / 'notebook.ipynb').read_text(encoding='utf-8'))
 SRC = [''.join(c['source']) for c in NB['cells'] if c['cell_type'] == 'code']
 # two kinds: a LIGHT-gated Speedy + leg notebook, or a FLEET-ONLY notebook (our models alone, one cell, no Speedy)
 FLEET_ONLY = SRC[0].startswith('# ---- fleet ONLY')
-assert FLEET_ONLY or (SRC[0].startswith('# ---- light dummy-run gate') and '_RSNA_LIGHT_ALLOWED = True' in SRC[0]), \
-    'neither a light build nor a fleet-only notebook'
+# third kind (2026-10-09, scripts/run_base_fleet.py): a public base notebook (e.g. Versia_5) + our leg as the last cell;
+# the base's own dummy run is short, so it has no light gate
+BASE = SRC[-1].startswith("# ---- this project's fleet leg on a public base")
+# fourth kind (2026-10-10): the public base ALONE (run_base_fleet.py --fleet none), a last cell that checks submission.csv
+BASE_ONLY = SRC[-1].startswith('# ---- base ONLY')
+assert FLEET_ONLY or BASE or BASE_ONLY or (SRC[0].startswith('# ---- light dummy-run gate') and '_RSNA_LIGHT_ALLOWED = True' in SRC[0]), \
+    'neither a light build, a fleet-only notebook nor a base + leg notebook'
 N_GATED = sum(1 for s in SRC if s.startswith('%%rsna_speedy_cell'))
-LEG = SRC[0] if FLEET_ONLY else next(s for s in SRC if s.startswith('# ---- model80:'))
+LEG = '_M80_FLEET = []' if BASE_ONLY else SRC[0] if FLEET_ONLY else SRC[-1] if BASE else \
+    next(s for s in SRC if s.startswith('# ---- model80:'))
 FLEET = ast.literal_eval(re.search(r'^_M80_FLEET = (.+)$', LEG, re.M).group(1))
 N_CKPT = len({f for m in FLEET for f in m[1]})
 READOUT = any('GROUP READOUT' in s for s in SRC)
@@ -113,6 +119,15 @@ if not verified:
         skipped = 0
         leg = next((l for l in lines if l.startswith('[fleet-only] submission written')), '')
         leg_ok = ' 3/3 studies read by the fleet, 0 failed' in leg and ckpts == N_CKPT
+    elif BASE_ONLY:   # the base as published: only its own submission file and our checking cell
+        gate_ok, skipped = True, 0
+        leg = next((l for l in lines if l.startswith('[base-only] submission.csv')), '')
+        leg_ok = leg.startswith('[base-only] submission.csv (3, 13)')
+    elif BASE:   # the base runs in full on the dummy data; check our leg's line (base tracebacks may be handled ones)
+        gate_ok, skipped = True, 0
+        leg = next((l for l in lines if l.startswith('[model80] fleet leg blended')), '')
+        leg_ok = (' 3/3 studies read by the fleet, 0 failed' in leg and 'dropped for time []' in leg and ckpts == N_CKPT
+                  and 'fleet leg FAILED' not in text)
     else:
         gate_ok = any(l.startswith('[light] dummy-run gate: light=True') for l in lines)
         skipped = sum(1 for l in lines if l.startswith('[light] Speedy cell ') and l.endswith('skipped (dummy run)'))
@@ -128,7 +143,7 @@ if not verified:
         v = d.iloc[:, 1:].to_numpy(float)
         sub_ok = d.shape == (3, 13) and np.isfinite(v).all() and v.min() >= 0 and v.max() <= 1
         sub_info = f'{d.shape} finite in [0,1]: {sub_ok}'
-    ok = gate_ok and skipped == N_GATED and leg_ok and readout_ok and tracebacks == 0 and sub_ok
+    ok = gate_ok and skipped == N_GATED and leg_ok and readout_ok and (tracebacks == 0 or BASE or BASE_ONLY) and sub_ok
     report = (f'{"OK" if ok else "BAD"} gate_light={gate_ok} skipped={skipped}/{N_GATED} leg_ok={leg_ok} '
               f'checkpoints={ckpts}/{N_CKPT} readout_ok={readout_ok} tracebacks={tracebacks} submission={sub_info} '
               f'log_span={span}s\n{leg}\n')

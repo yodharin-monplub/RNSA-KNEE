@@ -12,7 +12,7 @@ from pathlib import Path
 SCRATCH = Path(__file__).resolve().parent
 OTHER = Path(__file__).resolve().parents[1]   # the project's Other/ folder
 PY = str(OTHER / '.venv/Scripts/python.exe')
-NAMES = ['model142', 'model143', 'model144', 'model145', 'model146']   # priority order
+NAMES = ['model150', 'model151', 'model153', 'model152', 'model143']   # priority order (2026-10-09: Versia_5 base + our leg; model143 = student alone)
 target = dt.datetime.fromisoformat(sys.argv[1] if len(sys.argv) > 1 else '2026-10-10T07:01')
 
 

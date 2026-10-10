@@ -1,4 +1,4 @@
 Model143: model113 ALONE (fleet-only, no Speedy): is the pseudo-label student better than model104 alone (public 0.942, model108)? Full windows, fleet-only notebook with leg v6 (scripts/run_fleet_only.py --leg v6). Decides next week's TPU plan (second pseudo-label round or not).
 Build (from Other/): python scripts/run_fleet_only.py --name model143 --title "RSNA Knee Model143 Model113 Alone" --leg v6 --fleet "[('model113', ['model113_best.pt'], 's96')]"
 Planned: dummy run + submission Sat 2026-10-10 from 07:01 (main GPU quota refresh).
-Score: pending.
+Score: public 0.947 (submitted 2026-10-10 07:15, ref 57025075). The round-1 pseudo-label student ALONE beats the plain model104 alone (0.942) by +0.005 and matches our best blends -> the round-2 chain (model147 5-fold student, then model148/149) started 08:05.

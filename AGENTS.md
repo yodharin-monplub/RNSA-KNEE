@@ -21,24 +21,44 @@ can you get me a winning prize, doesn't have to be first place.
 Work in this directory. create many models starting with model1 model2 model3...
 in each model, create a readme.txt
 
-## Hardware limitation
+## Hardware
 
-Has GPU and CUDA on local pc = True.
+Local
+- Has GPU and CUDA on local pc = False
 
+Kaggle
 I have a team with many kaggle ids.
 - If this is kaggle competition use:
 	KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org
 	KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org
 	to train and submit. They these 2 id have join team.
+	Ensure that KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org always have atleast 15 hours of gpu quota for submission.
 - If this is not a kaggle competitions, use the rest of the kaggle api to train.
 - The quotas is shared with other competitions
 - If kaggle GPU and TPU data runs out, the submission can't be made. use with care
 
-Priority
-- Consider using local gpu first(if exist) then Kaggle then vast.ai.
+Google SDK
+- I have google SDK that you can use
 
-Other resources
+Openrouter
 - openrouter is available.
+
+Claude API console
+- Claude api console is available
+
+Vast.ai
+- Vast.ai is avaialble
+
+Priority
+Use compute in the follow priority:
+1. Local compute
+2. Kaggle compute
+3. GCP SDK
+4. Vast.ai
+
+Use LLM api in the follow priority:
+1. Claude api console
+2. Openrouter
 
 ## Cloud spending behaviour
 
