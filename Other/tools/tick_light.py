@@ -108,7 +108,10 @@ if not verified:
     fetch(out)
     text, span = '', None
     for p in out.rglob('*.log'):
-        entries = json.loads(p.read_text(encoding='utf-8'))
+        try:   # Kaggle's run log is JSON; other *.log files a base writes (e.g. heliosli's cufile.log) are skipped
+            entries = json.loads(p.read_text(encoding='utf-8'))
+        except ValueError:
+            continue
         text += ''.join(e.get('data', '') for e in entries)
         if entries:
             span = round(entries[-1]['time'] - entries[0]['time'])

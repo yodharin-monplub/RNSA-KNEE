@@ -1,0 +1,6 @@
+Model165: goodpjw2008/rsna-knee-coatnet-2-5d-convnext-mil-lb-0-954 (public 0.954, updated 2026-10-12) + this project's fleet leg v6 (LEG4) at w 0.25.
+Base = heliosli's restored 0.954 pipeline unchanged (nartaa Raptor CoAtNet SWA + heliosli compact ConvNeXt-small bundle 209a32c8b50a6b1c, 70/30 rank blend) + the author's own 2.5D ConvNeXt MIL reader (goodpjw2008/rsna-knee-2-5d-convnext-reader, 3 folds) rank-blended on top with one weight per finding (skipped after 7.5 h). A second base next to model162-164 (diversity: a third model family inside the base). Copied here as base_goodpjw2008__....ipynb.
+Leg members: [('model113', ['model113_best.pt'], 's96'), ('model104', ['model104_best.pt'], 's96'), ('model112', ['model112_best.pt'], 's96'), ('model132', ['model132_best.pt'], 's96')]
+Build (from Other/): python scripts/run_base_fleet.py --base artifacts/public/goodpjw2008__rsna-knee-coatnet-2-5d-convnext-mil-lb-0-954 --name model165 --title "RSNA Knee model165 goodpjw954 plus leg w25" --weight 0.25 --fleet "[('model113', ['model113_best.pt'], 's96'), ('model104', ['model104_best.pt'], 's96'), ('model112', ['model112_best.pt'], 's96'), ('model132', ['model132_best.pt'], 's96')]"
+Dummy run 2026-10-12 07:40 (main account); tools/tick_until.py verifies and submits.
+Score: public 0.954 (submitted 2026-10-12 10:41, scored 16:09). Same as model162-164 at 3 decimals.
