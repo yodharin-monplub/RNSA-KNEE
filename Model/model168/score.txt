@@ -1,0 +1,1 @@
+public 0.955 (2026-10-13; heliosli 50/50 base on compact-v1 + LEG4 w 0.20)

@@ -1,0 +1,6 @@
+Model171: heliosli's public 0.956 Raptor + S6 50/50 notebook + this project's fleet leg v6 (LEG4) at w 0.45 (higher-weight probe next to model168 w .20 / model169 w .30).
+Base: see Model/model167/readme.txt.
+Leg members: [('model113', ['model113_best.pt'], 's96'), ('model104', ['model104_best.pt'], 's96'), ('model112', ['model112_best.pt'], 's96'), ('model132', ['model132_best.pt'], 's96')]
+Build (from Other/): python scripts/run_base_fleet.py --base artifacts/public/heliosli__blend956_compactv1 --name model171 --title "RSNA Knee model171 helios956 plus leg w45" --weight 0.45 --fleet "[('model113', ['model113_best.pt'], 's96'), ('model104', ['model104_best.pt'], 's96'), ('model112', ['model112_best.pt'], 's96'), ('model132', ['model132_best.pt'], 's96')]"
+Submission 2026-10-13 07:01-07:05 REJECTED (HTTP 400 "Your Notebook uses non-versioned datasets [/datasets/heliosli/rsna-knee-compact-r6cnxfsss]"). Rebuilt (kernel version 2) on artifacts/public/heliosli__blend956_compactv1 = heliosli's notebook with the compact bundle read from heliosli/rsna-knee-compact-v1 (same files, bundle 209a32c8b50a6b1c; used by model162-166, which submitted fine) - 2 slug changes in code + the dataset source. Dummy run v2 pushed 07:2x; tools/tick_until.py verifies and submits.
+Score: pending.
