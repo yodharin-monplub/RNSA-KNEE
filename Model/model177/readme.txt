@@ -1,0 +1,6 @@
+Model177: heliosli =0.9576 (Raptor 384+224 + R6 fe055406 flip TTA) alone, as published
+Base = heliosli/0-9576-latest-public-dataset-score-in-one-click (Oct 14, title "=0.9576"): stage 1 nartaa Raptor CoAtNet 384 SWA (mirror TTA) + stage 1b nartaa's public 224-px CoAtNet (0.945 alone; Raptor half = 0.65 x rank(384) + 0.35 x rank(224)); stage 2 heliosli's R6 compact ConvNeXt-small, bundle fe055406fad6a12f (4 folds + Effusion fluid / Baker's state stackers, flip TTA) from heliosli/rsna-knee-r6-frozen-fe055406 (the bundle behind the withdrawn 0.956 notebook, now public in a frozen dataset); stage 3 rank blend Raptor half 0.5 / R6 0.5. On 2026-10-15 931 teams sit at 0.956 and 164 at 0.957 (bronze and silver lines both 0.956); we were 1248th at 0.955. Copied here as base_heliosli__0-9576-....ipynb.
+No leg: the published notebook alone (+ a last cell that checks submission.csv).
+Build (from Other/): python scripts/run_base_fleet.py --base artifacts/public/heliosli__0-9576-latest-public-dataset-score-in-one-click --name model177 --title "RSNA Knee model177 h9576 alone" --fleet none
+Dummy run 2026-10-15 ~15:10 (main account); tools/tick_until.py verifies and submits the same day.
+Score: pending.
