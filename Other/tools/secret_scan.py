@@ -20,7 +20,7 @@ hits = {k: diff.count(v) for k, v in env.items() if diff.count(v)}
 patterns = {'kaggle_token': r'KGAT_[A-Za-z0-9]{20,}', 'openrouter': r'sk-or-v1-[a-f0-9]{20,}', 'discord_bot': r'[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}',
             'private_key': r'-----BEGIN [A-Z ]*PRIVATE KEY-----'}
 shape_hits = {k: len(re.findall(p, diff)) for k, p in patterns.items() if re.findall(p, diff)}
-bad_files = [n for n in names if any(s in n.lower() for s in ('.env', 'email.txt', '.kaggle', 'id_rsa', 'deploy'))]
+bad_files = [n for n in names if not n.lower().endswith('.example') and any(s in n.lower() for s in ('.env', 'email.txt', '.kaggle', 'id_rsa', 'deploy'))]
 print(f'staged files {len(names)} | diff chars {len(diff)} | env values checked {len(env)} | env hits {hits} | '
       f'token-shape hits {shape_hits} | suspicious file names {bad_files}')
 sys.exit(1 if hits or shape_hits or bad_files else 0)

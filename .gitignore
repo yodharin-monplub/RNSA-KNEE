@@ -26,8 +26,8 @@ Other/.venv/
 .agents/
 .codex/
 
-# .git/info/exclude hides the Other/model* working folders (their contents are duplicated under Model/),
-# but model12 is the inference package that scripts/ and every submission notebook import.
+# Model working directories under Other/ are duplicated under Model/
+Other/model*/
 !Other/model12/
 Other/model12/__pycache__/
 

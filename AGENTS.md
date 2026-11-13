@@ -29,10 +29,10 @@ Local
 Kaggle
 I have a team with many kaggle ids.
 - If this is kaggle competition use:
-	KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org
-	KAGGLE_API_KEY_warinaeinwandee@actuarialtutor.org
-	to train and submit. They these 2 id have join team.
-	Ensure that KAGGLE_API_KEY_yodharinmonplub@actuarialtutor.org always have atleast 15 hours of gpu quota for submission.
+	KAGGLE_API_KEY_primary_submit_account
+	KAGGLE_API_KEY_teammate_account
+	to train and submit. These 2 accounts have joined the team.
+	Ensure that primary submit account always has at least 15 hours of gpu quota for submission.
 - If this is not a kaggle competitions, use the rest of the kaggle api to train.
 - The quotas is shared with other competitions
 - If kaggle GPU and TPU data runs out, the submission can't be made. use with care
@@ -76,7 +76,7 @@ goal: keep pushing for higher score. Aim for both good CV score and public leade
 if the model is running, you can hibernate and wait. monitor every 20 minutes.
 Keep running and DM me every milestone or if you need human input, if I disagree I will tell you to stop.
 Make the session history link to the folder, not to the pc.
-When submit, if it's a kaggle competition, submit to KAGGLE\_API\_KEY\_YODHAIRNMONPLUB only and just run test on the dummy data to save GPU quota.
+When submit, if it's a kaggle competition, submit to primary submit account only and just run test on the dummy data to save GPU quota.
 Permission to rent a instance without asking = True
 Permission to submit without asking = True. You can use claude-in-chrome to submit and if you can't submit, sent the file to me.
 
@@ -94,7 +94,7 @@ In the root directory, not in any folder, let there be only AGENTS.md
 
 ## Communication method
 
-i have connected you to discord. Communicate to me via discord DM to username:yodharin and I will reply.
+i have connected you to discord. Communicate to me via discord DM and I will reply.
 For Example, if you need me to point to a direction. I will reply the DM or type the prompt.
 DM me if you make progress. Please check DM continuously.
 
